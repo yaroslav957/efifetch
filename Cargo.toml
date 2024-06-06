@@ -3,20 +3,22 @@ name = "efifetch"
 authors = ["Yaroslav957"]
 categories = ["embedded"]
 keywords = ["uefi", "fetch", "efi", "osdev"]
-default-target = "x86_64-unknown-uefi"
 version = "0.1.0"
+rust-version = "1.78"
 edition = "2021"
 
 [profile.dev]
 panic = "abort"
+opt-level = 3
 
 [profile.release]
 panic = "abort"
+opt-level = 3
 
 [dependencies.uefi]
-version = "0.28.0"
+version = "*"
 features = ["panic_handler", "logger", "global_allocator"]
 
 [dependencies.raw-cpuid]
-version = "11.0.2"
+version = "*"
 

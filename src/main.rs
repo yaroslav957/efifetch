@@ -3,19 +3,13 @@
 
 extern crate alloc;
 
+use uefi::prelude::*;
+
 mod utils;
 mod logic;
 
-use uefi::prelude::*;
-use uefi::proto::console::text::Output;
-
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut system_table)
-        .expect("Cant init services");
-    
-    let bt = system_table.boot_services();
-    let stdout = utils::protocols::open_scoped::<Output>(&bt);
-    logic::main_loop(stdout)
+    logic::main_loop(&mut system_table).status()
 }
 

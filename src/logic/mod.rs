@@ -1,31 +1,19 @@
-use alloc::{format, vec};
-use uefi::{print, println, Status};
-use uefi::proto::console::text::{Color, Output, OutputMode};
-use uefi::table::boot::ScopedProtocol;
-use crate::utils::protocols::{change_text_color, get_resolution};
+use uefi::proto::console::text::Output;
+use uefi::Result;
+use uefi::table::{Boot, SystemTable};
+use crate::logic::draw::draw_fetch;
+use crate::utils;
 
-const LABEL: &str = "Efifetch 0.1.0";
+mod draw;
 
-pub fn main_loop(mut stdout: ScopedProtocol<Output>) -> Status {
-    stdout.clear()
-        .expect("Cant clear terminal");
+pub fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
+    uefi::helpers::init(&mut system_table)?;
+    let boot_services = system_table.boot_services();
+    let runtime_services = system_table.runtime_services();
+    let stdout = utils::protocols::open_scoped::<Output>(&boot_services);
+    draw_fetch(stdout, runtime_services);
 
-    let (rows, columns) = get_resolution(&mut stdout);
-    
-    change_text_color(&mut stdout, Color::LightRed);
-    println!("{:^width$}", LABEL, width = columns);
-    
-    
-    let resolution = format!("Resolution: {}*{}", columns, rows);
-    let args = vec![resolution];
-
-    change_text_color(&mut stdout, Color::LightGray);
-    
-    for arg in args {
-        print!("{:^width$}", arg, width = columns);
+    loop {
+        todo!("keyboard input events for loop")
     }
-
-    loop {}
-
-    Status::SUCCESS
 }
