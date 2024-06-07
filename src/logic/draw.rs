@@ -3,7 +3,7 @@ use uefi::{print, println};
 use alloc::format;
 use uefi::proto::console::text::{Color, Output};
 use uefi::table::boot::ScopedProtocol;
-use crate::utils::info::{CpuInfo, Date, print_info};
+use crate::utils::info::{CpuInfo, Date};
 use crate::utils::protocols::{get_resolution, stdout_text_color};
 
 const LABEL: &str = "Efifetch 0.1.0";

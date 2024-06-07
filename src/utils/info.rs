@@ -1,7 +1,5 @@
-use core::fmt::Display;
 use raw_cpuid::{CpuId, ProcessorBrandString, VendorInfo};
 use uefi::prelude::RuntimeServices;
-use uefi::print;
 use uefi::table::runtime::Time;
 
 pub struct Date {
