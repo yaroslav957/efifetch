@@ -42,7 +42,3 @@ impl CpuInfo {
         }
     }
 }
-
-pub fn print_info<T: Display>(display: T, columns: usize) {
-    print!("{:^width$}", display, width = columns)
-}

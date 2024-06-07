@@ -1,5 +1,5 @@
 use uefi::prelude::RuntimeServices;
-use uefi::println;
+use uefi::{print, println};
 use alloc::format;
 use uefi::proto::console::text::{Color, Output};
 use uefi::table::boot::ScopedProtocol;
@@ -18,9 +18,9 @@ pub fn draw_fetch(mut stdout: ScopedProtocol<Output>, runtime_services: &Runtime
     stdout_text_color(&mut stdout, Color::LightRed);
     println!("{:^width$}", LABEL, width = columns);
     stdout_text_color(&mut stdout, Color::LightGray);
-    print_info(format!("Resolution: {} x {}", columns, rows), columns);
-    print_info(format!("Date: {:?}/{:?}/{:?}", date.day, date.month, date.year), columns);
-    print_info(format!("Cpu brand: {:?}, Cpu Vendor: {:?}", cpu.brand.as_str(), cpu.vendor.as_str()), columns);
+    print!("{:^width$}", format!("Resolution: {} x {}", columns, rows), width = columns);
+    print!("{:^width$}", format!("Date: {:?}/{:?}/{:?}", date.day, date.month, date.year), width = columns);
+    print!("{:^width$}", format!("Cpu brand: {:?}, Cpu Vendor: {:?}", cpu.brand.as_str(), cpu.vendor.as_str()), width = columns);
 }
 
 
