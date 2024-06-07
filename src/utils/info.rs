@@ -1,5 +1,7 @@
+use core::fmt::Display;
 use raw_cpuid::{CpuId, ProcessorBrandString, VendorInfo};
 use uefi::prelude::RuntimeServices;
+use uefi::print;
 use uefi::table::runtime::Time;
 
 pub struct Date {
@@ -39,4 +41,8 @@ impl CpuInfo {
                 .expect("Cant get vendor info"),
         }
     }
+}
+
+pub fn print_info<T: Display>(display: T, columns: usize) {
+    print!("{:^width$}", display, width = columns)
 }

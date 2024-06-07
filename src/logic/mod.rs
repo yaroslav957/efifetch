@@ -11,9 +11,10 @@ pub fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
     let boot_services = system_table.boot_services();
     let runtime_services = system_table.runtime_services();
     let stdout = utils::protocols::open_scoped::<Output>(&boot_services);
+    
     draw_fetch(stdout, runtime_services);
 
     loop {
-        todo!("keyboard input events for loop")
+       // todo!("keyboard input events for loop")
     }
 }
