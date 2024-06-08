@@ -1,8 +1,4 @@
-## Todo
-
-KeyEvents, KeyEvent loop, debugging tools, fields value change
-
-## Features info
+# Features info
 
 - [ ] Miscellaneous
     - [x] Resolution
@@ -22,3 +18,6 @@ KeyEvents, KeyEvent loop, debugging tools, fields value change
     - [ ] Pages
     - [ ] Physical/Virtual addr
     - [ ] Type
+- [ ] KeyEvents
+    - [ ] Loop
+    - [ ] Categories 
