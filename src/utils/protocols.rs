@@ -3,6 +3,7 @@ use uefi::proto::console::text::{Color, Output};
 use uefi::proto::Protocol;
 use uefi::table::boot::ScopedProtocol;
 
+#[inline]
 pub fn open_scoped<T: Protocol>(bt: &BootServices) -> ScopedProtocol<T> {
     let protocol_handle = bt.get_handle_for_protocol::<T>()
         .expect("Cant create handle");
@@ -10,7 +11,7 @@ pub fn open_scoped<T: Protocol>(bt: &BootServices) -> ScopedProtocol<T> {
         .expect("Cant open protocol")
 }
 
-#[cold]
+#[inline]
 pub fn get_resolution(stdout: &mut Output) -> (usize, usize) {
     let output_mode = stdout.current_mode()
         .ok().flatten().unwrap();
