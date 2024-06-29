@@ -13,7 +13,7 @@
     - [x] Vmx
     - [x] Hypervisor info
     - [ ] Syscall info
-    - [x] Svm
+    - [x] Smx
 - [ ] Memory map
     - [ ] Pages
     - [ ] Physical/Virtual addr
