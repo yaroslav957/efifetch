@@ -1,2 +1,2 @@
-pub mod protocols;
-pub mod info;
+pub(crate) mod protocols;
+pub(crate) mod info;

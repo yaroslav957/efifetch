@@ -1,12 +1,12 @@
 use uefi::proto::console::text::{Input, Key, Output, ScanCode};
-use uefi::{println, Result};
+use uefi::Result;
 use uefi::table::{Boot, SystemTable};
-use crate::logic::draw::menu;
+use crate::logic::draw::{cpu, mem, menu};
 use crate::utils;
 
 mod draw;
 
-pub fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
+pub(crate) fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
     uefi::helpers::init(&mut system_table)?;
     let boot_services = system_table.boot_services();
     let runtime_services = system_table.runtime_services();
@@ -19,16 +19,15 @@ pub fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
             match key {
                 Key::Printable(c) => {
                     match char::from(c) {
-                        '1' => println!("R"),
-                        _ => {}
+                        '1' => mem::draw(&mut stdout),
+                        '2' => cpu::draw(&mut stdout),
+                        _ => { unimplemented!("Unimplemented key") }
                     }
                 }
                 Key::Special(ScanCode::ESCAPE) => {
                     menu::draw(&mut stdout, runtime_services);
                 }
-                _ => {
-                    unimplemented!()
-                }
+                _ => { unimplemented!("Unimplemented event") }
             }
         }
     }
