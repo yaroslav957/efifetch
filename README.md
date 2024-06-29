@@ -10,14 +10,14 @@
     - [ ] Cores
     - [ ] Threads
     - [ ] Logical ids
-    - [ ] Vmx
-    - [ ] Hypervisor info
+    - [x] Vmx
+    - [x] Hypervisor info
     - [ ] Syscall info
-    - [ ] Svm
+    - [x] Smx
 - [ ] Memory map
     - [ ] Pages
     - [ ] Physical/Virtual addr
     - [ ] Type
-- [ ] KeyEvents
-    - [ ] Loop
-    - [ ] Categories 
+- [x] KeyEvents
+    - [x] Loop
+    - [x] Categories 
