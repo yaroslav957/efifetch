@@ -1,5 +1,6 @@
 use alloc::string::{String, ToString};
 use core::arch::x86_64::{__cpuid, CpuidResult};
+use core::mem::transmute;
 
 use uefi::prelude::RuntimeServices;
 use uefi::table::runtime::Time;
@@ -56,19 +57,15 @@ fn get_cpuid_info(buffer: &mut [u8; 12], cpuid: Leaf) {
 }
 
 #[inline]
-fn getinfo(buffer: &mut [u8; 48]) {
-    unsafe {
-        for i in 0..3_usize {
-            let CpuidResult { ebx, ecx, edx, .. } = __cpuid(Leaf::Brand as u32 + i as u32);
-            let cpuid_result = [ebx, ecx, edx];
-            for j in 0..4 {
-                let name_slice = &mut buffer[16 * i..][4 * j..][0..4];
-                name_slice.copy_from_slice(&cpuid_result[j].to_le_bytes());
-            }
-        }
-    }
+fn get_cpuid_brand(buffer: &mut [u8; 48]) {
+    *buffer = unsafe {
+        transmute::<[[u8; 16]; 3], _>(core::array::from_fn(|i| {
+            let CpuidResult { eax, ebx, ecx, edx } = __cpuid(Leaf::Brand as u32 + i as u32);
+            let cpuid_result = [eax, ebx, ecx, edx];
+            transmute(cpuid_result.map(u32::to_le_bytes))
+        }))
+    };
 }
-
 
 impl From<Time> for Date {
     fn from(time: Time) -> Self {
@@ -94,11 +91,11 @@ impl CpuInfo {
         let mut brand_buff = [0u8; 48];
         get_cpuid_info(&mut hypervisor_buff, Leaf::Hypervisor);
         get_cpuid_info(&mut vendor_buff, Leaf::Vendor);
-        getinfo(&mut brand_buff);
+        get_cpuid_brand(&mut brand_buff);
 
         Self {
             brand: core::str::from_utf8(&brand_buff)
-                .expect("Cant get vendor info")
+                .expect("Cant get brand info")
                 .trim_matches('\0')
                 .to_string(),
             vendor: core::str::from_utf8(&vendor_buff)
