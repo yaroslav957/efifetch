@@ -2,15 +2,6 @@ use alloc::string::{String, ToString};
 use core::arch::x86_64::{__cpuid, CpuidResult};
 use core::mem::transmute;
 
-use uefi::prelude::RuntimeServices;
-use uefi::table::runtime::Time;
-
-pub(crate) struct Date {
-    pub(crate) day: u8,
-    pub(crate) month: u8,
-    pub(crate) year: u16,
-}
-
 pub(crate) struct CpuInfo {
     pub(crate) brand: String,
     pub(crate) vendor: String,
@@ -71,23 +62,6 @@ fn get_cpuid_brand(buffer: &mut [u8; 48]) {
             transmute(cpuid_result.map(u32::to_le_bytes))
         }))
     };
-}
-
-impl From<Time> for Date {
-    fn from(time: Time) -> Self {
-        Self {
-            day: time.day(),
-            month: time.month(),
-            year: time.year(),
-        }
-    }
-}
-
-impl Date {
-    pub(crate) fn get(runtime_services: &RuntimeServices) -> Self {
-        runtime_services.get_time()
-            .unwrap().into()
-    }
 }
 
 impl TryFrom<[u8; 12]> for Hypervisor {

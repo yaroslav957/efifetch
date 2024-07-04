@@ -3,7 +3,7 @@ use uefi::{print, println};
 use alloc::format;
 use uefi::proto::console::text::{Color, Output};
 use uefi::table::boot::ScopedProtocol;
-use crate::utils::info::Date;
+use crate::utils::info::date::Date;
 use crate::utils::protocols::{get_resolution, stdout_text_color};
 
 pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, runtime_services: &RuntimeServices) {

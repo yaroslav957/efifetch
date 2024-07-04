@@ -25,7 +25,6 @@ version = "*"
 features = [
     "panic_handler",
     "logger",
-    "global_allocator"
-]
+    "global_allocator"]
 
 
