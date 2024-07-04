@@ -19,11 +19,18 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, runtime_services: &R
     print!("{:^width$}", format!("Bios Date: {}/{}/{}", date.day, date.month, date.year), width = columns);
     print!("{:^width$}", "Mem/RAM: press 1", width = columns);
     println!("{:^width$}", "Cpu: press 2", width = columns);
-    //
     stdout_text_color(&mut stdout, Color::LightRed);
     print!("{:>width$}", "██", width = columns / 2 - 6);
 
-    let colors = [Color::LightGreen, Color::LightBlue, Color::LightGray, Color::Red, Color::Green, Color::Blue, Color::DarkGray];
+    let colors = [
+        Color::LightGreen,
+        Color::LightBlue,
+        Color::LightGray,
+        Color::Red,
+        Color::Green,
+        Color::Blue,
+        Color::DarkGray];
+    
     for color in colors {
         stdout_text_color(&mut stdout, color);
         print!("██");
