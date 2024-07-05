@@ -1,44 +1,64 @@
 use alloc::boxed::Box;
+
 use uefi::data_types::{PhysicalAddress, VirtualAddress};
 use uefi::prelude::BootServices;
 use uefi::table::boot::{MemoryMap, MemoryType};
 
-const MEMORY_LAYOUT_SIZE: usize = 256 * 64;
+const MEMORY_LAYOUT_SIZE: usize = 4096 * 4;
 
-pub(crate) struct MemInfo {
-    pub(crate) total_pages: u64,
-    pub(crate) used_pages: u64,
+#[derive(Default, Debug)]
+pub(crate) struct PagesInfo {
+    pub(crate) total: u64,
+    pub(crate) used: u64,
+}
+#[derive(Debug)]
+pub(crate) struct MemoryInfo {
+    pub(crate) pages: PagesInfo,
     pub(crate) phys_addr: PhysicalAddress,
     pub(crate) virt_addr: VirtualAddress,
-    pub(crate) memory_map: MemoryMap<'static>,
 }
 
-#[inline]
-fn pages(memory_map: &MemoryMap) -> Option<(u64, u64)> {
-    memory_map.entries().fold(Some((0u64, 0u64)), |acc, descriptor| {
-        acc.map(|(total, used)| {
-            (total + descriptor.page_count,
-             if descriptor.ty == MemoryType::CONVENTIONAL {
-                 used + descriptor.page_count
-             } else {
-                 used
-             },)
-        })
-    })
+impl TryFrom<&MemoryMap<'_>> for MemoryInfo {
+    type Error = ();
+
+    fn try_from(map: &MemoryMap) -> Result<Self, Self::Error> {
+        let mut pages = PagesInfo::default();
+        let mut phys_addr = PhysicalAddress::default();
+        let mut virt_addr = VirtualAddress::default();
+
+        for descriptor in map.entries() {
+            pages.total += descriptor.page_count;
+            pages.used += {
+                match descriptor.ty {
+                    MemoryType::CONVENTIONAL => descriptor.page_count,
+                    _ => 0,
+                }
+            };
+
+            phys_addr = descriptor.phys_start;
+            virt_addr = descriptor.virt_start;
+        }
+
+        Ok(Self { pages, phys_addr, virt_addr })
+    }
 }
 
-impl MemInfo {
-    pub(crate) fn get(boot_services: &BootServices) -> Self {
+pub(crate) struct MappedMemoryInfo {
+    pub(crate) info: MemoryInfo,
+    pub(crate) map: MemoryMap<'static>,
+}
+
+impl From<&BootServices> for MappedMemoryInfo {
+    fn from(boot_services: &BootServices) -> Self {
         let buf: &'static mut [u8] = Box::leak(Box::new([0u8; MEMORY_LAYOUT_SIZE]));
-        let mut memory_map = boot_services.memory_map(buf)
+        let map = boot_services.memory_map(buf)
             .expect("Cant get Memory map");
-        let (total_pages, used_pages) = pages(&mut memory_map)
+        let info = MemoryInfo::try_from(&map)
             .expect("Cant get Memory pages");
 
         Self {
-            total_pages,
-            used_pages,
-            memory_map,
+            info,
+            map,
         }
     }
 }

@@ -1,4 +1,5 @@
 use alloc::format;
+
 use uefi::{print, println};
 use uefi::proto::console::text::{Color, Output};
 use uefi::table::boot::ScopedProtocol;

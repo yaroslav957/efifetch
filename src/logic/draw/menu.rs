@@ -17,7 +17,7 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, runtime_services: &R
     stdout_text_color(&mut stdout, Color::LightGray);
     print!("{:^width$}", format!("Resolution: {} x {}", columns, rows), width = columns);
     print!("{:^width$}", format!("Bios Date: {}/{}/{}", date.day, date.month, date.year), width = columns);
-    print!("{:^width$}", "Mem/RAM: press 1", width = columns);
+    print!("{:^width$}", "Mem: press 1", width = columns);
     println!("{:^width$}", "Cpu: press 2", width = columns);
     stdout_text_color(&mut stdout, Color::LightRed);
     print!("{:>width$}", "██", width = columns / 2 - 6);
@@ -36,5 +36,3 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, runtime_services: &R
         print!("██");
     }
 }
-
-

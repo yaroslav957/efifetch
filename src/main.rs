@@ -13,4 +13,3 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     logic::main_loop(&mut system_table)
         .status()
 }
-
