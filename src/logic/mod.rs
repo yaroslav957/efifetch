@@ -22,7 +22,7 @@ pub(crate) fn main_loop(mut system_table: &mut SystemTable<Boot>) -> Result {
             match key {
                 Key::Printable(c) => {
                     match char::from(c) {
-                        '1' => mem::draw(&mut stdout),
+                        '1' => mem::draw(&mut stdout, &boot_services),
                         '2' => cpu::draw(&mut stdout),
                         _ => { println!("Invalid key expression"); }
                     }

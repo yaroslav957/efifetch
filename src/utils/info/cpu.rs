@@ -1,4 +1,5 @@
 use alloc::string::{String, ToString};
+
 use core::arch::x86_64::{__cpuid, CpuidResult};
 use core::mem::transmute;
 
@@ -98,7 +99,7 @@ impl CpuInfo {
         get_cpuid_info(&mut hypervisor_buff, Leaf::Hypervisor);
         get_cpuid_info(&mut vendor_buff, Leaf::Vendor);
         get_cpuid_brand(&mut brand_buff);
-
+        
         Self {
             brand: core::str::from_utf8(&brand_buff)
                 .expect("Cant get brand info")

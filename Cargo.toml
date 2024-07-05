@@ -10,14 +10,14 @@ edition = "2021"
 license = "MIT"
 
 [profile.dev]
-panic = "abort"
+panic = "unwind"
 incremental = true
-strip = true
-opt-level = 3
+opt-level = 1
 
 [profile.release]
 panic = "abort"
 incremental = true
+strip = true
 opt-level = 3
 
 [dependencies.uefi]
