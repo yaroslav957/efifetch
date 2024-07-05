@@ -15,8 +15,8 @@
     - [ ] Syscall info
     - [x] Smx
 - [ ] Memory map
-    - [ ] Pages
-    - [ ] Physical/Virtual addr
+    - [x] Pages
+    - [x] Physical/Virtual addr
     - [ ] Type
 - [x] KeyEvents
     - [x] Loop
