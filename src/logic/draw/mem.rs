@@ -16,7 +16,7 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, boot_services: &Boot
     stdout_text_color(&mut stdout, Color::LightRed);
     println!("{:^width$}", "Mem page", width = columns);
     stdout_text_color(&mut stdout, Color::LightGray);
-    print!("{:^width$}", format!("Total pages: {:?}", mem.info.pages.total), width = columns);
+    print!("{:^width$}", format!("Total pages: {}", mem.info.pages.total), width = columns);
     print!("{:^width$}", format!("Used pages: {}", mem.info.pages.used), width = columns);
     print!("{:^width$}", format!("Physical start: {}", mem.info.phys_addr), width = columns);
     print!("{:^width$}", format!("Virtual start: {}", mem.info.virt_addr), width = columns);
