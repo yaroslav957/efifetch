@@ -1,4 +1,7 @@
-![Image alt]()
+![Image alt](https://github.com/yaroslav957/efifetch/blob/master/resources/screen1.png)
+![Image alt](https://github.com/yaroslav957/efifetch/blob/master/resources/screen2.png)
+![Image alt](https://github.com/yaroslav957/efifetch/blob/master/resources/screen3.png)
+
 
 # Features info
 
