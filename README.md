@@ -1,3 +1,5 @@
+![Image alt]()
+
 # Features info
 
 - [ ] Miscellaneous
