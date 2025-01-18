@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 
-use core::arch::x86_64::{__cpuid, CpuidResult};
+use core::arch::x86_64::{CpuidResult, __cpuid};
 use core::mem::transmute;
 
 pub(crate) struct CpuInfo {
@@ -99,7 +99,7 @@ impl CpuInfo {
         get_cpuid_info(&mut hypervisor_buff, Leaf::Hypervisor);
         get_cpuid_info(&mut vendor_buff, Leaf::Vendor);
         get_cpuid_brand(&mut brand_buff);
-        
+
         Self {
             brand: core::str::from_utf8(&brand_buff)
                 .expect("Cant get brand info")
@@ -111,10 +111,8 @@ impl CpuInfo {
             hypervisor: Hypervisor::try_from(hypervisor_buff)
                 .expect("Cant get Hypervisor info")
                 .name(),
-            vmx: feature_support(Leaf::Vmx, VMX_BITMASK)
-                .expect("Cant get vmx info"),
-            smx: feature_support(Leaf::Smx, SMX_BITMASK)
-                .expect("Cant get vmx info"),
+            vmx: feature_support(Leaf::Vmx, VMX_BITMASK).expect("Cant get vmx info"),
+            smx: feature_support(Leaf::Smx, SMX_BITMASK).expect("Cant get vmx info"),
         }
     }
 }

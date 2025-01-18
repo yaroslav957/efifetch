@@ -19,7 +19,6 @@ impl From<Time> for Date {
 
 impl Date {
     pub(crate) fn get(runtime_services: &RuntimeServices) -> Self {
-        runtime_services.get_time()
-            .unwrap().into()
+        runtime_services.get_time().expect("Cant get time").into()
     }
 }

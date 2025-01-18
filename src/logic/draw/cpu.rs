@@ -1,23 +1,62 @@
 use alloc::format;
 
-use uefi::{print, println};
-use uefi::proto::console::text::{Color, Output};
-use uefi::table::boot::ScopedProtocol;
 use crate::utils::info::cpu::CpuInfo;
 use crate::utils::protocols::{get_resolution, stdout_text_color};
+use uefi::print;
+use uefi::proto::console::text::{Color, Output};
+use uefi::table::boot::ScopedProtocol;
 
 pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>) {
-    stdout.clear().unwrap();
-
     let cpu = CpuInfo::get();
     let columns = get_resolution(&mut stdout).1;
 
     stdout_text_color(&mut stdout, Color::LightRed);
-    println!("{:^width$}", "Cpu page", width = columns);
+    print!("{:<width$}", " Cpu:", width = columns - 2);
+    print!("│");
+    print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
-    print!("{:^width$}", format!("Brand: {}", cpu.brand.as_str()), width = columns);
-    print!("{:^width$}", format!("Vmx(x86 virtualization): {}", cpu.vmx), width = columns);
-    print!("{:^width$}", format!("Vendor: {}", cpu.vendor.as_str()), width = columns);
-    print!("{:^width$}", format!("Hypervisor: {}", cpu.hypervisor), width = columns);
-    print!("{:^width$}", format!("Smx: {:?}", cpu.smx), width = columns);
+    print!(
+        "{:<width$}",
+        format!(" Brand: {}", cpu.brand.as_str()),
+        width = columns - 2
+    );
+    stdout_text_color(&mut stdout, Color::LightRed);
+    print!("│");
+    print!("│");
+    stdout_text_color(&mut stdout, Color::LightGray);
+    print!(
+        "{:<width$}",
+        format!(" Vmx(x86 virtualization): {}", cpu.vmx),
+        width = columns - 2
+    );
+    stdout_text_color(&mut stdout, Color::LightRed);
+    print!("│");
+    print!("│");
+    stdout_text_color(&mut stdout, Color::LightGray);
+    print!(
+        "{:<width$}",
+        format!(" Vendor: {}", cpu.vendor.as_str()),
+        width = columns - 2
+    );
+    stdout_text_color(&mut stdout, Color::LightRed);
+    print!("│");
+    print!("│");
+    stdout_text_color(&mut stdout, Color::LightGray);
+    print!(
+        "{:<width$}",
+        format!(" Hypervisor: {}", cpu.hypervisor),
+        width = columns - 2
+    );
+    stdout_text_color(&mut stdout, Color::LightRed);
+    print!("│");
+    print!("│");
+    stdout_text_color(&mut stdout, Color::LightGray);
+    print!(
+        "{:<width$}",
+        format!(" Smx: {:?}", cpu.smx),
+        width = columns - 2
+    );
+    stdout_text_color(&mut stdout, Color::LightRed);
+    print!("│");
+    print!("│");
 }

@@ -39,10 +39,14 @@ impl TryFrom<&MemoryMap<'_>> for MemoryInfo {
             virt_addr = descriptor.virt_start;
         }
 
-        Ok(Self { pages, phys_addr, virt_addr })
+        Ok(Self {
+            pages,
+            phys_addr,
+            virt_addr,
+        })
     }
 }
-
+#[allow(dead_code)]
 pub(crate) struct MappedMemoryInfo {
     pub(crate) info: MemoryInfo,
     pub(crate) map: MemoryMap<'static>,
@@ -51,14 +55,9 @@ pub(crate) struct MappedMemoryInfo {
 impl From<&BootServices> for MappedMemoryInfo {
     fn from(boot_services: &BootServices) -> Self {
         let buf: &'static mut [u8] = Box::leak(Box::new([0u8; MEMORY_LAYOUT_SIZE]));
-        let map = boot_services.memory_map(buf)
-            .expect("Cant get Memory map");
-        let info = MemoryInfo::try_from(&map)
-            .expect("Cant get Memory pages");
+        let map = boot_services.memory_map(buf).expect("Cant get Memory map");
+        let info = MemoryInfo::try_from(&map).expect("Cant get Memory pages");
 
-        Self {
-            info,
-            map,
-        }
+        Self { info, map }
     }
 }

@@ -4,13 +4,13 @@ authors = ["Yaroslav957"]
 categories = ["embedded"]
 repository = "https://github.com/yaroslav957/efifetch"
 keywords = ["uefi", "fetch", "efi", "osdev"]
-version = "0.1.5"
-rust-version = "1.79"
+version = "0.1.8"
+rust-version = "1.83"
 edition = "2021"
 license = "MIT"
 
 [profile.dev]
-panic = "unwind"
+panic = "abort"
 incremental = true
 opt-level = 1
 
