@@ -11,7 +11,8 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>) {
     let columns = get_resolution(&mut stdout).1;
 
     stdout_text_color(&mut stdout, Color::LightRed);
-    print!("{:<width$}", " Cpu:", width = columns - 2);
+    print!("{:<width$}", " Cpu:", width = columns - 13);
+    print!("╚══════╝   ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
@@ -27,36 +28,40 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>) {
     print!(
         "{:<width$}",
         format!(" Vmx(x86 virtualization): {}", cpu.vmx),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("███████╗   ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Vendor: {}", cpu.vendor.as_str()),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██╔════╝   ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Hypervisor: {}", cpu.hypervisor),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("█████╗     ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Smx: {:?}", cpu.smx),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██╔══╝     ");
     print!("│");
     print!("│");
 }

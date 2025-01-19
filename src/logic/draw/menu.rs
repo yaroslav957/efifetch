@@ -46,7 +46,8 @@ pub(crate) fn draw(
         right_space = (columns - VERSION.chars().count() - 4 + 1) / 2
     );
     print!("│");
-    print!("{:<width$}", format!(" Utility: "), width = columns - 2);
+    print!("{:<width$}", format!(" Utility: "), width = columns - 13);
+    print!("███████╗   ");
     print!("│");
     print!("│");
 
@@ -54,19 +55,20 @@ pub(crate) fn draw(
     print!(
         "{:<width$}",
         format!(" Resolution: {} x {}", columns, rows),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██╔════╝   ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Bios Date: {}/{}/{}", date.day, date.month, date.year),
-        width = columns - 2
+        width = columns - 13
     );
-
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("█████╗     ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, colors[0]);
@@ -83,8 +85,9 @@ pub(crate) fn draw(
     print!("██");
     stdout_text_color(&mut stdout, colors[6]);
     print!("██");
-    print!("{:<width$}", format!(" "), width = columns - 17);
+    print!("{:<width$}", format!(" "), width = columns - 28);
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██╔══╝     ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, colors[7]);
@@ -101,12 +104,29 @@ pub(crate) fn draw(
     print!("██");
     stdout_text_color(&mut stdout, colors[13]);
     print!("██");
-    print!("{:<width$}", format!(" "), width = columns - 17);
+    print!("{:<width$}", format!(" "), width = columns - 17 - 11);
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("███████╗   ");
     print!("│");
     print!("│");
     cpu::draw(&mut stdout);
     mem::draw(&mut stdout, boot_services);
+    print!("│");
+    print!("{:<width$}", format!(" "), width = columns - 13);
+    print!("██║        ");
+    print!("│");
+    print!("│");
+    print!("{:<width$}", format!(" "), width = columns - 13);
+    print!("██║        ");
+    print!("│");
+    print!("│");
+    print!("{:<width$}", format!(" "), width = columns - 13);
+    print!("██║        ");
+    print!("│");
+    print!("│");
+    print!("{:<width$}", format!(" "), width = columns - 13);
+    print!("╚═╝        ");
+    print!("│");
     print!(
         "└{:─<left_space$}{:─<right_space$}┘",
         "",

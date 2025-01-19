@@ -12,16 +12,18 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, boot_services: &Boot
     let columns = get_resolution(&mut stdout).1;
 
     stdout_text_color(&mut stdout, Color::LightRed);
-    print!("{:<width$}", " Mem:", width = columns - 2);
+    print!("{:<width$}", " Mem:", width = columns - 13);
+    print!("██║        ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Total pages: {}", mem.info.pages.total),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("╚═╝        ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
@@ -37,17 +39,19 @@ pub(crate) fn draw(mut stdout: &mut ScopedProtocol<Output>, boot_services: &Boot
     print!(
         "{:<width$}",
         format!(" Physical start: {}", mem.info.phys_addr),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██╗        ");
     print!("│");
     print!("│");
     stdout_text_color(&mut stdout, Color::LightGray);
     print!(
         "{:<width$}",
         format!(" Virtual start: {}", mem.info.virt_addr),
-        width = columns - 2
+        width = columns - 13
     );
     stdout_text_color(&mut stdout, Color::LightRed);
+    print!("██║        ");
     print!("│");
 }
