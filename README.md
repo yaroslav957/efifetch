@@ -4,7 +4,7 @@
 # How to use
 
 ## in a VM
-1. Download dependencies and firmware files (for example Fedora linux):
+1. Download dependencies and firmware files (Fedora linux):
 ```
 sudo dnf install qemu-kvm edk2-ovmf
 ```
@@ -28,7 +28,7 @@ qemu-system-x86_64 -enable-kvm \
 ```
 
 ## on Hardware
-For example on linux:
+Preparing USB drive (linux):
 ```
 sgdisk \
     --clear \
