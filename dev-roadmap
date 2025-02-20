@@ -1,5 +1,7 @@
-Основные функции
-1. Чтение чипсетов
+Функционал RU.exe/RU.efi, который я бы хотел реализовать в efifetch:
+
+Основное
+1. чипсеты
    - PCI configuration space (F6 ALT-1)
    - PCI Express
    - Super I/O chipsets
@@ -21,7 +23,7 @@
    - AHCI MMIO (ALT-F5)
    - INT15 E820 tables (ALT-F2)
 
-2. Отладка с RU
+2. Отладка
    - Save registers to a file including:
      - Single page (F2)
      - Memory binary (SHIFT-F2)
