@@ -66,4 +66,4 @@ cp efifetch.efi esp/EFI/BOOT/BOOTX64.EFI
 - [ ] **Memory map (66% done)**
     - [x] Pages
     - [x] Physical/Virtual addr
-    - [ ] Type
+    - [ ] Type (WIP)

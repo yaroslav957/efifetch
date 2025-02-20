@@ -1,0 +1,50 @@
+Основные функции
+1. Чтение чипсетов
+   - PCI configuration space (F6 ALT-1)
+   - PCI Express
+   - Super I/O chipsets
+     - Manual access
+     - Auto detection
+   - System chipsets
+   - 16bit port read/write up to 32bit data
+   - IO space (ALT-4)
+   - IDE / AHCI data returned by Identify Command (ALT-5)
+   - Read/Write memory (In EMM386/Windows 9x max=1MB) (ALT-7)
+   - CPU MSRs (AMD and Intel), different AP support for RU.EFI (ALT-8)
+   - SMBIOS data (ALT-9)
+   - SMBUS data (partially working) (ALT-0)
+   - CPU Brand / ID / speed (CTRL-I)
+   - UEFI configuration tables (Ctrl-I)
+   - UEFI variables (RU.EXE must be used with RUSMI Aptio module) (ALT-=)
+   - ACPI tables (ALT-6)
+   - Read LBA from HDD (ALT-F1)
+   - AHCI MMIO (ALT-F5)
+   - INT15 E820 tables (ALT-F2)
+
+2. Отладка с RU
+   - Save registers to a file including:
+     - Single page (F2)
+     - Memory binary (SHIFT-F2)
+     - All PCI registers
+   - Load a file to registers
+   - Dump PCI/ACPI/SMBIOS/E820 table in command line (RU /D)
+   - F8 Compare differences to current registers with file saved
+   - ~ Command line supported to write data to port/memory
+   - ALT-L or Enter to list and select the details of registers
+   - Report bug using F12 to save the screenshot
+
+Советы по использованию
+- Поиск диалога
+  - Type any chars or CTRL-F to start the search dialog in full screen list selection page
+  - CTRL-I System Information
+  - F6 List PCI devices
+  - ENTER / ALT-L Register's detail
+  - ALT-6 ACPI table
+  - ALT-9 SMBIOS
+  - ALT-= UEFI variable
+  - ALT-F1 Mass storage
+  - ALT-F2 E820 table
+  - ALT-F6 USB MMIO
+  - Use CTRL-UP and CTRL-DOWN to search up and down with last words typed above
+  - Press F1 to check which hotkey is available
+  - Read the bottom line (periodically changed) of the screen for the key usages for current page

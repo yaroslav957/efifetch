@@ -1,18 +1,19 @@
 use alloc::string::{String, ToString};
-
-use core::arch::x86_64::{CpuidResult, __cpuid};
-use core::mem::transmute;
-
-pub(crate) struct CpuInfo {
-    pub(crate) brand: String,
-    pub(crate) vendor: String,
-    pub(crate) hypervisor: &'static str,
-    pub(crate) vmx: bool,
-    pub(crate) smx: bool,
-}
+use core::{
+    arch::x86_64::{CpuidResult, __cpuid},
+    mem::transmute,
+};
 
 const VMX_BITMASK: u32 = 1 << 5;
 const SMX_BITMASK: u32 = 1 << 6;
+
+pub struct CpuInfo {
+    pub brand: String,
+    pub vendor: String,
+    pub hypervisor: &'static str,
+    pub vmx: bool,
+    pub smx: bool,
+}
 
 #[repr(u32)]
 #[derive(Clone, Copy)]
@@ -24,17 +25,20 @@ enum Leaf {
     Brand = 0x80000002,
 }
 
+#[derive(Default)]
 enum Hypervisor {
     KVM,
     VMware,
     HyperV,
     Qemu,
+    #[default]
+    Unknown,
 }
 
 #[inline]
-fn feature_support(cpuid: Leaf, bitmask: u32) -> Option<bool> {
+fn feature_support(cpuid: Leaf, bitmask: u32) -> bool {
     let cpuid_result = unsafe { __cpuid(cpuid as _) };
-    Some(cpuid_result.ecx & bitmask != 0)
+    cpuid_result.ecx & bitmask != 0
 }
 
 #[inline]
@@ -65,16 +69,14 @@ fn get_cpuid_brand(buffer: &mut [u8; 48]) {
     };
 }
 
-impl TryFrom<[u8; 12]> for Hypervisor {
-    type Error = ();
-
-    fn try_from(cpuid_result: [u8; 12]) -> Result<Self, Self::Error> {
+impl Hypervisor {
+    fn new(cpuid_result: [u8; 12]) -> Self {
         match &cpuid_result {
-            b"KVMKVMKVM\0\0\0" => Ok(Self::KVM),
-            b"VMwareVMware" => Ok(Self::VMware),
-            b"Microsoft Hv" => Ok(Self::HyperV),
-            b"TCGTCGTCGTCG" => Ok(Self::Qemu),
-            _ => Err(()),
+            b"KVMKVMKVM\0\0\0" => Self::KVM,
+            b"VMwareVMware" => Self::VMware,
+            b"Microsoft Hv" => Self::HyperV,
+            b"TCGTCGTCGTCG" => Self::Qemu,
+            _ => Self::Unknown,
         }
     }
 }
@@ -86,12 +88,13 @@ impl Hypervisor {
             Self::VMware => "VMware",
             Self::HyperV => "HyperV",
             Self::Qemu => "Qemu",
+            Self::Unknown => "Unknown",
         }
     }
 }
 
 impl CpuInfo {
-    pub(crate) fn get() -> Self {
+    pub fn get() -> Self {
         let mut hypervisor_buff = [0u8; 12];
         let mut vendor_buff = [0u8; 12];
         let mut brand_buff = [0u8; 48];
@@ -102,17 +105,15 @@ impl CpuInfo {
 
         Self {
             brand: core::str::from_utf8(&brand_buff)
-                .expect("Cant get brand info")
+                .unwrap_or("Unknown")
                 .trim_matches('\0')
                 .to_string(),
             vendor: core::str::from_utf8(&vendor_buff)
-                .expect("Cant get vendor info")
+                .unwrap_or("Unknown")
                 .to_string(),
-            hypervisor: Hypervisor::try_from(hypervisor_buff)
-                .expect("Cant get Hypervisor info")
-                .name(),
-            vmx: feature_support(Leaf::Vmx, VMX_BITMASK).expect("Cant get vmx info"),
-            smx: feature_support(Leaf::Smx, SMX_BITMASK).expect("Cant get vmx info"),
+            hypervisor: Hypervisor::new(hypervisor_buff).name(),
+            vmx: feature_support(Leaf::Vmx, VMX_BITMASK),
+            smx: feature_support(Leaf::Smx, SMX_BITMASK),
         }
     }
 }
