@@ -7,6 +7,7 @@ use core::{
 const VMX_BITMASK: u32 = 1 << 5;
 const SMX_BITMASK: u32 = 1 << 6;
 
+#[allow(dead_code)]
 pub struct CpuInfo {
     pub brand: String,
     pub vendor: String,

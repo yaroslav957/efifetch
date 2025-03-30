@@ -5,4 +5,4 @@ esp/
 OVMF_CODE.fd
 OVMF_VARS.fd
 Cargo.lock
-.rustfmt.toml
+rustfmt.toml

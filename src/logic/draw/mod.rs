@@ -1,3 +1,3 @@
-pub mod cpu;
-pub mod mem;
-pub mod menu;
+pub mod cpu_page;
+pub mod mem_page;
+pub mod menu_page;

@@ -46,24 +46,31 @@ mkdir esp/EFI/BOOT
 cp efifetch.efi esp/EFI/BOOT/BOOTX64.EFI
 ```
 
-# Features info
+# Features info & todos
 
-- [ ] **Miscellaneous (75% done)**
-    - [x] Resolution
-    - [x] Date
-    - [x] Colors 
-    - [ ] Image info
-- [ ] **Cpu (55% done)**
-    - [x] Vendor
-    - [x] Brand info
-    - [ ] Cores
-    - [ ] Threads
-    - [ ] Logical ids
-    - [x] Vmx
-    - [x] Smx
-    - [x] Hypervisor info
-    - [ ] Syscall info
-- [ ] **Memory map (66% done)**
-    - [x] Pages
-    - [x] Physical/Virtual addr
-    - [ ] Type (WIP)
+TODO:
+1. Information:
+   - PCI configuration space 
+   - PCIe MMIO (optional idk)
+   - CPU MSRs (AMD and Intel)
+   - SMBIOS data
+   - SMBUS data (partially working)
+   - CPU frequency
+   - UEFI configuration tables
+   - UEFI variables
+   - ACPI tables
+   - Read LBA from HDD
+   - AHCI MMIO (optional)
+   - INT15 E820 tables (optional)
+   
+
+2. Redisign
+  - Eventloop for `F{x}` to open pages
+  - NET page = `<F1>`
+  - CPU page = `<F2>`
+  - MEMORY page = `<F3>`
+  - EFI page = `<F3>`
+  - PCI page = `<F4>`
+  - ACPI tables page = `<F5>`
+  - SMBIOS page = `<F6>`
+  - HOST page = `<F7>`

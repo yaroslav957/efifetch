@@ -10,5 +10,5 @@ mod utils;
 
 #[entry]
 fn main() -> Status {
-    logic::main_loop()
+    logic::main_eventloop()
 }
