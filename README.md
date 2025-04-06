@@ -1,7 +1,4 @@
-# Preview
 ![Preview error](https://github.com/yaroslav957/efifetch/blob/master/previews/v0.1.9.0.png)
-
-Efifetch currently supports only VGA output (some resolution issues with serialport0 on QEMU)
 
 # How to use
 
@@ -33,7 +30,7 @@ qemu-system-x86_64 -enable-kvm \
 
 Efifetch has never been tested on real hardware. Use it on a real device at your own risk
 
-# Features info & todos
+# Info & todos
 
 TODO list:
 - PCI configuration space 
@@ -48,3 +45,5 @@ TODO list:
 - Read LBA from HDD
 - AHCI MMIO (optional)
 - INT15 E820 tables (optional)
+- Fix resolution issues with serialport0 on QEMU
+
