@@ -1,6 +1,8 @@
 # Preview
 ![Preview error](https://github.com/yaroslav957/efifetch/blob/master/previews/v0.1.8.1.png)
 
+efifetch currently supports only VGA output (some resolution issues with serialport0 on QEMU)
+
 # How to use
 
 ## in a VM
