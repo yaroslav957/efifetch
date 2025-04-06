@@ -45,7 +45,7 @@ mount "here /path_to_disk_partition" esp
 
 mkdir esp/EFI/BOOT
 
-cp efifetch.efi esp/EFI/BOOT/BOOTX64.EFI
+cp efifetch.efi esp/EFI/BOOT/BOOTX64.efi
 ```
 
 # Features info & todos
