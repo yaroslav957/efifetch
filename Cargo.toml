@@ -4,7 +4,7 @@ authors = ["Yaroslav957"]
 categories = ["embedded"]
 repository = "https://github.com/yaroslav957/efifetch"
 keywords = ["uefi", "fetch", "efi", "osdev"]
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 license = "MIT"
 

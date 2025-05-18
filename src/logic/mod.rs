@@ -1,10 +1,10 @@
 use crate::{logic::draw::menu_page, utils};
-use draw::{cpu_page, mem_page, net_page};
+use draw::{cpu_page, mem_page};
 use info::{cpu::CpuInfo, date::Date, mem::MemInfo};
 use uefi::{
-    proto::{
-        console::text::{Input, Key, Output, ScanCode},
-        network::snp::SimpleNetwork,
+    proto::console::{
+        gop::GraphicsOutput,
+        text::{Input, Key, Output, ScanCode},
     },
     Status,
 };
@@ -19,9 +19,8 @@ pub fn main_eventloop() -> Status {
     let date_info = Date::get().unwrap();
     let mem_info = MemInfo::get().unwrap();
 
-    let mut stdout = utils::protocols::open_scoped::<Output>().unwrap();
-    let mut stdin = utils::protocols::open_scoped::<Input>().unwrap();
-    let stdnet = utils::protocols::open_scoped::<SimpleNetwork>().unwrap();
+    let mut stdout = utils::open_scoped::<Output>().unwrap();
+    let mut stdin = utils::open_scoped::<Input>().unwrap();
 
     // Tests with minimal (80x25) resolution
     // let modes_vec = stdout.modes().enumerate().collect::<Vec<_>>();
@@ -33,11 +32,11 @@ pub fn main_eventloop() -> Status {
         if let Some(key) = stdin.read_key().unwrap() {
             match key {
                 Key::Special(ScanCode::DELETE) => {
-                    uefi::boot::stall(100_000);
+                    uefi::boot::stall(700_000);
                     break;
                 }
                 Key::Special(ScanCode::ESCAPE) => menu_page::draw(&mut stdout, date_info).unwrap(),
-                Key::Special(ScanCode::FUNCTION_1) => net_page::draw(&stdnet),
+                Key::Special(ScanCode::FUNCTION_1) => (), /* PCI */
                 Key::Special(ScanCode::FUNCTION_2) => cpu_page::draw(&cpu_info),
                 Key::Special(ScanCode::FUNCTION_3) => mem_page::draw(&mem_info),
                 _ => {}

@@ -1,13 +1,12 @@
+use core::fmt::Write;
+
 use crate::{
     logic::info::date::Date,
-    utils::protocols::{get_resolution, stdout_text_color},
+    utils::{get_resolution, stdout_text_color},
 };
 use alloc::format;
 use uefi::{
-    boot::ScopedProtocol,
-    print,
-    proto::console::text::{Color, Output},
-    Result,
+    boot::ScopedProtocol, proto::console::text::{Color, Output}, Result
 };
 
 const LOGO: &'static str = include_str!("../../assets/uefi.logo");
@@ -30,10 +29,11 @@ const COLORS: [Color; 14] = [
 ];
 
 pub fn draw(mut stdout: &mut ScopedProtocol<Output>, date: Date) -> Result<()> {
-    stdout.clear()?;
+    //stdout.clear()?;
 
     let (rows, columns) = get_resolution(&mut stdout)?;
     let mut logo = LOGO.lines();
+    
 
     let resolution = format!(" Resolution: {}x{}", columns, rows);
     let date = format!(" BIOS Date: {}/{}/{}", date.day, date.month, date.year);
@@ -42,184 +42,193 @@ pub fn draw(mut stdout: &mut ScopedProtocol<Output>, date: Date) -> Result<()> {
     let firmware_revision = format!(" Firmware Revision: {}", uefi::system::firmware_revision());
 
     // Top frame - 1 line
-    //==================================================================//
-    let margin = columns - 35;
+    let mut margin = columns - 35;
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("┌{:─<32}┬{:─>margin$}┐", "", "");
-    //==================================================================//
+    stdout
+        .write_fmt(format_args!("┌{:─<32}┬{:─>margin$}┐", "", ""))
+        .unwrap();
 
     // Info bar - 2 line
-    //==================================================================//
-    let margin = (columns - 80) / 5;
-    print!("│ {} │", logo.next().unwrap());
+    if columns % 5 != 0 {
+        margin = columns - 82;
+    } else {
+        margin = (columns - 80) / 5;
+    }
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!(" NET:");
+    stdout.write_str(" PCI:").unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F1 ");
+    stdout.write_str("F1 ").unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!("{:<margin$}CPU:", "");
+    stdout
+        .write_fmt(format_args!("{:<margin$}CPU:", ""))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F2 ");
+    stdout.write_str("F2 ").unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!("{:<margin$}MEM:", "");
+    stdout
+        .write_fmt(format_args!("{:<margin$}MEM:", ""))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F3 ");
+    stdout.write_str("F3 ").unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!("{:<margin$}PCI:", "");
+    stdout
+        .write_fmt(format_args!("{:<margin$}NET:", ""))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F4 ");
+    stdout.write_str("F4 ").unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!("{:<margin$}ACPI:", "");
+    stdout
+        .write_fmt(format_args!("{:<margin$}ACPI:", ""))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F5 ");
+    stdout.write_str("F5 ").unwrap();
     stdout_text_color(&mut stdout, Color::Red)?;
-    print!("{:<margin$}HOST:", "");
+    stdout
+        .write_fmt(format_args!("{:<margin$}HOST:", ""))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("F6 │");
-    //==================================================================//
+    stdout.write_str("F6 │").unwrap();
 
     // Underbar - 3 line
-    //==================================================================//
     let margin = columns - 35;
-    print!("│ {} ├{:─<margin$}┤", logo.next().unwrap(), "");
-    //==================================================================//
-    
-    // UEFI and runtime information - 4-9 lines 
-    //==================================================================//
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!(
+            "│ {} ├{:─<margin$}┤",
+            logo.next().unwrap(),
+            ""
+        ))
+        .unwrap();
+
+    // UEFI and runtime information - 4-9 lines
+    // 4
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{VERSION}");
+    stdout.write_fmt(format_args!("{VERSION}")).unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("{:<width$}│", "", width = columns - VERSION.len() - 35);
+
+    let margin = columns - VERSION.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // 5
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{resolution}");
+    stdout.write_fmt(format_args!("{resolution}")).unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("{:<width$}│", "", width = columns - resolution.len() - 35);
+
+    let margin = columns - resolution.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // 6
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{date}");
+    stdout.write_fmt(format_args!("{date}")).unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("{:<width$}│", "", width = columns - date.len() - 35);
+
+    let margin = columns - date.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // 7
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{revision}");
+    stdout.write_fmt(format_args!("{revision}")).unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!("{:<width$}│", "", width = columns - revision.len() - 35);
+
+    let margin = columns - revision.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // 8
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{firmware_revision}");
+    stdout
+        .write_fmt(format_args!("{firmware_revision}"))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!(
-        "{:<width$}│",
-        "",
-        width = columns - firmware_revision.len() - 35
-    );
+
+    let margin = columns - firmware_revision.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // 9
-    print!("│ {} │", logo.next().unwrap());
+    stdout
+        .write_fmt(format_args!("│ {} │", logo.next().unwrap()))
+        .unwrap();
     stdout_text_color(&mut stdout, Color::LightGray)?;
-    print!("{firmware_vendor}");
+    stdout.write_fmt(format_args!("{firmware_vendor}")).unwrap();
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!(
-        "{:<width$}│",
-        "",
-        width = columns - firmware_vendor.len() - 35
-    );
-    //==================================================================//
-    
+
+    let margin = columns - firmware_vendor.len() - 35;
+    stdout.write_fmt(format_args!("{:<margin$}│", "")).unwrap();
+
     // Blank lines
-    //==================================================================//
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!(
-        "│ {} │{:<width$}│",
-        logo.next().unwrap(),
-        "",
-        width = columns - 35
-    );
-    print!("│{:<32}│{:>width$}││ ", "", "", width = columns - 35);
+    let margin = columns - 35;
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+    stdout
+        .write_fmt(format_args!("│ {} │{:<margin$}│", logo.next().unwrap(), ""))
+        .unwrap();
+
+    stdout
+        .write_fmt(format_args!("│{:<32}│{:>margin$}││ ", "", ""))
+        .unwrap();
 
     for i in 0..=6 {
         stdout_text_color(&mut stdout, COLORS[i])?;
-        print!("██");
+        stdout.write_str("██").unwrap();
     }
 
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!(
-        "{:<left_space$}│{:<right_space$}││ ",
-        "",
-        "",
-        left_space = 17,
-        right_space = columns - 35
-    );
+
+    let margin = columns - 35;
+    stdout
+        .write_fmt(format_args!("{:<17}│{:<margin$}││ ", "", ""))
+        .unwrap();
 
     for i in 7..=13 {
         stdout_text_color(&mut stdout, COLORS[i])?;
-        print!("██");
+        stdout.write_str("██").unwrap();
     }
 
     stdout_text_color(&mut stdout, Color::LightRed)?;
-    print!(
-        "{:<left_space$}│{:<right_space$}│",
-        "",
-        "",
-        left_space = 17,
-        right_space = columns - 35
-    );
-    //==================================================================//
-    
+
+    let margin = columns - 35;
+    stdout
+        .write_fmt(format_args!("{:<17}│{:<margin$}│", "", ""))
+        .unwrap();
+
     // Bottom bar - 21 line
-    //==================================================================//
-    print!(
-        "└{:─<32}┴{:─<right_space$}┘",
-        "",
-        "",
-        right_space = columns - 35
-    );
-    //==================================================================//
+    stdout
+        .write_fmt(format_args!("└{:─<32}┴{:─<margin$}┘", "", ""))
+        .unwrap();
     Ok(())
 }
