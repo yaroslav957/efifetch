@@ -1,20 +1,26 @@
-use alloc::string::{String, ToString};
 use core::{
-    arch::x86_64::{CpuidResult, __cpuid},
+    arch::x86_64::{__cpuid, CpuidResult},
     mem::transmute,
 };
 
 const VMX_BITMASK: u32 = 1 << 5;
 const SMX_BITMASK: u32 = 1 << 6;
 
-#[allow(dead_code)]
+// wait for 0.2.0 release *
+#[allow(dead_code)] // <--*
 pub struct CpuInfo {
-    pub brand: String,
-    pub vendor: String,
-    pub hypervisor: &'static str,
+    pub brand: Brand,
+    pub vendor: Vendor,
+    pub hypervisor: Hypervisor,
     pub vmx: bool,
     pub smx: bool,
 }
+
+#[repr(transparent)]
+pub struct Brand([u8; 48]);
+
+#[repr(transparent)]
+pub struct Vendor([u8; 12]);
 
 #[repr(u32)]
 #[derive(Clone, Copy)]
@@ -27,7 +33,7 @@ enum Leaf {
 }
 
 #[derive(Default)]
-enum Hypervisor {
+pub enum Hypervisor {
     KVM,
     VMware,
     HyperV,
@@ -36,14 +42,13 @@ enum Hypervisor {
     Unknown,
 }
 
-#[inline]
 fn feature_support(cpuid: Leaf, bitmask: u32) -> bool {
     let cpuid_result = unsafe { __cpuid(cpuid as _) };
     cpuid_result.ecx & bitmask != 0
 }
 
-#[inline]
-fn get_cpuid_info(buffer: &mut [u8; 12], cpuid: Leaf) {
+fn get_cpuid_info(cpuid: Leaf) -> [u8; 12] {
+    let mut buf = [0u8; 12];
     unsafe {
         let CpuidResult { ebx, ecx, edx, .. } = __cpuid(cpuid as _);
         let cpuid_result = match cpuid {
@@ -53,23 +58,48 @@ fn get_cpuid_info(buffer: &mut [u8; 12], cpuid: Leaf) {
         };
 
         for i in 0..3 {
-            let name_slice = &mut buffer[4 * i..4 * (i + 1)];
+            let name_slice = &mut buf[4 * i..4 * (i + 1)];
             name_slice.copy_from_slice(&cpuid_result[i].to_le_bytes());
         }
+
+        buf
     }
 }
 
-#[inline]
-fn get_cpuid_brand(buffer: &mut [u8; 48]) {
-    *buffer = unsafe {
-        transmute::<[[u8; 16]; 3], _>(core::array::from_fn(|i| {
-            let CpuidResult { eax, ebx, ecx, edx } = __cpuid(Leaf::Brand as u32 + i as u32);
-            let cpuid_result = [eax, ebx, ecx, edx];
-            transmute(cpuid_result.map(u32::to_le_bytes))
-        }))
-    };
+#[allow(dead_code)] // <--*
+impl Brand {
+    #[allow(unused_assignments)]
+    fn get_cpuid_brand() -> Self {
+        let mut buf = [0u8; 48];
+        buf = unsafe {
+            transmute::<[[u8; 16]; 3], _>(core::array::from_fn(|i| {
+                let CpuidResult { eax, ebx, ecx, edx } = __cpuid(Leaf::Brand as u32 + i as u32);
+                let cpuid_result = [eax, ebx, ecx, edx];
+                transmute(cpuid_result.map(u32::to_le_bytes))
+            }))
+        };
+
+        Self(buf)
+    }
+    pub fn name(&self) -> &str {
+        core::str::from_utf8(&self.0)
+            .unwrap_or("Unknown Brand")
+            .trim_matches('\0')
+    }
 }
 
+#[allow(dead_code)] // <--*
+impl Vendor {
+    fn new(cpuid_result: [u8; 12]) -> Self {
+        Self(cpuid_result)
+    }
+
+    pub fn name(&self) -> &str {
+        core::str::from_utf8(&self.0).unwrap_or("Unknown Vendor")
+    }
+}
+
+#[allow(dead_code)] // <--*
 impl Hypervisor {
     fn new(cpuid_result: [u8; 12]) -> Self {
         match &cpuid_result {
@@ -80,10 +110,8 @@ impl Hypervisor {
             _ => Self::Unknown,
         }
     }
-}
 
-impl Hypervisor {
-    fn name(self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
             Self::KVM => "KVM",
             Self::VMware => "VMware",
@@ -96,25 +124,18 @@ impl Hypervisor {
 
 impl CpuInfo {
     pub fn get() -> Self {
-        let mut hypervisor_buff = [0u8; 12];
-        let mut vendor_buff = [0u8; 12];
-        let mut brand_buff = [0u8; 48];
-
-        get_cpuid_info(&mut hypervisor_buff, Leaf::Hypervisor);
-        get_cpuid_info(&mut vendor_buff, Leaf::Vendor);
-        get_cpuid_brand(&mut brand_buff);
+        let vmx = feature_support(Leaf::Vmx, VMX_BITMASK);
+        let smx = feature_support(Leaf::Smx, SMX_BITMASK);
+        let hypervisor = Hypervisor::new(get_cpuid_info(Leaf::Hypervisor));
+        let vendor = Vendor::new(get_cpuid_info(Leaf::Vendor));
+        let brand = Brand::get_cpuid_brand();
 
         Self {
-            brand: core::str::from_utf8(&brand_buff)
-                .unwrap_or("Unknown")
-                .trim_matches('\0')
-                .to_string(),
-            vendor: core::str::from_utf8(&vendor_buff)
-                .unwrap_or("Unknown")
-                .to_string(),
-            hypervisor: Hypervisor::new(hypervisor_buff).name(),
-            vmx: feature_support(Leaf::Vmx, VMX_BITMASK),
-            smx: feature_support(Leaf::Smx, SMX_BITMASK),
+            brand,
+            vendor,
+            hypervisor,
+            vmx,
+            smx,
         }
     }
 }

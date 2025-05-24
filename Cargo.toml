@@ -1,19 +1,23 @@
 [package]
 name = "efifetch"
 authors = ["Yaroslav957"]
-categories = ["embedded"]
+categories = ["embedded", "uefi"]
 repository = "https://github.com/yaroslav957/efifetch"
 keywords = ["uefi", "fetch", "efi", "osdev"]
 version = "0.1.9"
-edition = "2021"
+edition = "2024"
 license = "MIT"
 
 [profile.dev]
+debug = true
 panic = "abort"
 
 [profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
 panic = "abort"
-strip = true
 
 [dependencies.uefi]
 version = "*"

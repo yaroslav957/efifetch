@@ -3,12 +3,11 @@
 
 extern crate alloc;
 
-use uefi::prelude::*;
-
 mod logic;
-mod utils;
+
+use uefi::prelude::*;
 
 #[entry]
 fn main() -> Status {
-    logic::main_eventloop()
+    logic::main_eventloop().unwrap()
 }

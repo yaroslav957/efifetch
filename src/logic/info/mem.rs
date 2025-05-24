@@ -1,8 +1,8 @@
 use uefi::{
+    Result,
     boot::MemoryType,
     data_types::{PhysicalAddress, VirtualAddress},
     mem::memory_map::{MemoryMap, MemoryMapOwned},
-    Result,
 };
 
 #[allow(unused)]

@@ -1,5 +1,6 @@
 use uefi::Result;
 
+#[allow(dead_code)] // <--*
 #[derive(Debug, Clone, Copy)]
 pub struct Date {
     pub day: u8,
