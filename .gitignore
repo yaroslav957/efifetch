@@ -1,8 +1,5 @@
 target/
 esp/
-**/*.rs.bk
-*.pdb
 OVMF_CODE.fd
 OVMF_VARS.fd
 Cargo.lock
-rustfmt.toml

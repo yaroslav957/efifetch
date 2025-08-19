@@ -13,9 +13,7 @@ debug = true
 panic = "abort"
 
 [profile.release]
-opt-level = "s"
 lto = "thin"
-codegen-units = 1
 strip = "symbols"
 panic = "abort"
 
@@ -23,7 +21,6 @@ panic = "abort"
 version = "*"
 features = [
     "panic_handler",
-    "logger",
     "global_allocator"]
 
 
