@@ -1,12 +1,11 @@
 #![no_main]
 #![no_std]
 
-extern crate alloc;
-
+mod display;
 mod event;
-mod info;
+mod utils;
 
-use crate::event::event_loop;
+use crate::event::event_handler;
 use uefi::{
     Status,
     boot::{ScopedProtocol, get_handle_for_protocol, open_protocol_exclusive},
@@ -27,5 +26,5 @@ pub fn main() -> Status {
     let inp_handle = get_handle_for_protocol::<Input>().unwrap();
     let mut inp = open_protocol_exclusive(inp_handle).unwrap();
 
-    event_loop(&mut inp, &mut out).unwrap()
+    event_handler(&mut inp, &mut out).unwrap()
 }
