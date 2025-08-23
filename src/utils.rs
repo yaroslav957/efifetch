@@ -9,5 +9,6 @@ pub fn resolution(out: &Out) -> Result<[usize; 2]> {
 #[cold]
 pub fn minimize(out: &mut Out) -> Result<()> {
     let min_mode = out.modes().min().unwrap();
+    let mi_mode = out.modes().last().unwrap();
     out.set_mode(min_mode)
 }

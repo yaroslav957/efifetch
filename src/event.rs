@@ -1,5 +1,6 @@
 use crate::{
     In, Out,
+    display::topbar,
     utils::{minimize, resolution},
 };
 use uefi::{
@@ -20,6 +21,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
 
     out.clear()?;
     minimize(out)?;
+    topbar::draw(out)?;
 
     loop {
         let mut events = [inp.wait_for_key_event().unwrap()];
