@@ -1,6 +1,6 @@
 use crate::{
     In, Out,
-    display::topbar,
+    display::Display,
     utils::{minimize, resolution},
 };
 use uefi::{
@@ -13,15 +13,18 @@ const MIN_CONSOLE_WIDTH: usize = 80;
 const MIN_CONSOLE_HEIGHT: usize = 25;
 
 pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
+    out.clear()?;
+    minimize(out)?;
+
+    let display = Display::new(out)?;
     let [width, height] = resolution(out)?;
 
     if width < MIN_CONSOLE_WIDTH || height < MIN_CONSOLE_HEIGHT {
         return Err(Error::new(Status::UNSUPPORTED, ()));
     }
 
-    out.clear()?;
-    minimize(out)?;
-    topbar::draw(out)?;
+    display.topbar(out)?;
+    display.bottombar(out)?;
 
     loop {
         let mut events = [inp.wait_for_key_event().unwrap()];

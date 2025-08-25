@@ -1,7 +1,6 @@
 use crate::{
     Out,
     display::{PANELS_BACKGROUND, PANELS_FOREGROUND, PANELS_HIGHLIGHT},
-    utils::resolution,
 };
 use core::fmt::Write;
 use uefi::Result;
@@ -9,9 +8,7 @@ use uefi::Result;
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-pub fn draw(out: &mut Out) -> Result<()> {
-    let [width, _] = resolution(out)?;
-
+pub fn draw(out: &mut Out, width: usize) -> Result<()> {
     header(out, width)?;
     footer(out, width)?;
 
@@ -59,7 +56,7 @@ fn draw_keybindings(out: &mut Out, bindings: &[(&str, &str)]) -> Result<()> {
 
 fn draw_pages(out: &mut Out, pages: &[&str]) -> Result<()> {
     for page in pages {
-        out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
+        out.set_color(PANELS_HIGHLIGHT, PANELS_BACKGROUND)?;
         out.write_char(' ').unwrap();
         out.write_str(&page[0..1]).unwrap();
         out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
