@@ -24,6 +24,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     }
 
     display.topbar(out)?;
+    display.startscreen(out)?;
     display.bottombar(out)?;
 
     loop {

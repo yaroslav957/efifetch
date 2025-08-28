@@ -18,7 +18,6 @@ pub fn draw(out: &mut Out, width: usize) -> Result<()> {
         "", "",
     ))
     .unwrap();
-    out.write_fmt(format_args!("{:<width$}", "")).unwrap();
 
     Ok(())
 }

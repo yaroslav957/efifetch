@@ -1,6 +1,8 @@
 use crate::{
     Out,
-    display::{PANELS_BACKGROUND, PANELS_FOREGROUND, PANELS_HIGHLIGHT},
+    display::{
+        BAR_BACKGROUND, BAR_FOREGROUND, BAR_HIGHLIGHT, PANELS_BACKGROUND, PANELS_FOREGROUND,
+    },
 };
 use core::fmt::Write;
 use uefi::Result;
@@ -45,9 +47,9 @@ fn footer(out: &mut Out, width: usize) -> Result<()> {
 
 fn draw_keybindings(out: &mut Out, bindings: &[(&str, &str)]) -> Result<()> {
     for binding in bindings {
-        out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
+        out.set_color(BAR_FOREGROUND, BAR_BACKGROUND)?;
         out.write_fmt(format_args!("{}:", binding.0)).unwrap();
-        out.set_color(PANELS_HIGHLIGHT, PANELS_BACKGROUND)?;
+        out.set_color(BAR_HIGHLIGHT, BAR_BACKGROUND)?;
         out.write_fmt(format_args!("{} ", binding.1)).unwrap();
     }
 
@@ -56,10 +58,10 @@ fn draw_keybindings(out: &mut Out, bindings: &[(&str, &str)]) -> Result<()> {
 
 fn draw_pages(out: &mut Out, pages: &[&str]) -> Result<()> {
     for page in pages {
-        out.set_color(PANELS_HIGHLIGHT, PANELS_BACKGROUND)?;
+        out.set_color(BAR_HIGHLIGHT, BAR_BACKGROUND)?;
         out.write_char(' ').unwrap();
         out.write_str(&page[0..1]).unwrap();
-        out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
+        out.set_color(BAR_FOREGROUND, BAR_BACKGROUND)?;
         out.write_str(&page[1..]).unwrap();
         out.write_char(' ').unwrap();
     }
