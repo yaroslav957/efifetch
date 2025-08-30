@@ -1,23 +1,19 @@
 use crate::{
     Out,
-    display::{PANELS_BACKGROUND, PANELS_FOREGROUND},
+    display::{PANEL_BACKGROUND, PANEL_FOREGROUND},
 };
 use core::fmt::Write;
 use uefi::Result;
 
+const NAME: &str = env!("CARGO_PKG_NAME");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
-const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
 pub fn draw(out: &mut Out, width: usize) -> Result<()> {
-    let repository = &REPOSITORY[8..];
-    let margin = (width - AUTHOR.len() - repository.len() - 6) / 2;
-
-    out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
-    out.write_fmt(format_args!(
-        "{:<margin$}{AUTHOR}, see {repository}{:<margin$}",
-        "", "",
-    ))
-    .unwrap();
+    let margin = (width - NAME.len() - VERSION.len() - AUTHOR.len() - 6) / 2;
+    out.set_color(PANEL_FOREGROUND, PANEL_BACKGROUND)?;
+    out.write_fmt(format_args!("{:<margin$}{NAME} {VERSION}, by {AUTHOR}", ""))
+        .unwrap();
 
     Ok(())
 }

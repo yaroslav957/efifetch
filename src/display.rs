@@ -1,8 +1,8 @@
 use crate::{Out, utils::resolution};
 use uefi::{Result, proto::console::text::Color};
 
-const PANELS_FOREGROUND: Color = Color::White;
-const PANELS_BACKGROUND: Color = Color::Black;
+const PANEL_FOREGROUND: Color = Color::White;
+const PANEL_BACKGROUND: Color = Color::Black;
 
 const BAR_FOREGROUND: Color = Color::White;
 const BAR_BACKGROUND: Color = Color::Blue;

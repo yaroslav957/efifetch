@@ -1,35 +1,11 @@
 use crate::{
     Out,
-    display::{
-        BAR_BACKGROUND, BAR_FOREGROUND, BAR_HIGHLIGHT, PANELS_BACKGROUND, PANELS_FOREGROUND,
-    },
+    display::{BAR_BACKGROUND, BAR_FOREGROUND, BAR_HIGHLIGHT},
 };
 use core::fmt::Write;
 use uefi::Result;
 
-const NAME: &str = env!("CARGO_PKG_NAME");
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 pub fn draw(out: &mut Out, width: usize) -> Result<()> {
-    header(out, width)?;
-    footer(out, width)?;
-
-    Ok(())
-}
-
-fn header(out: &mut Out, width: usize) -> Result<()> {
-    let margin = (width - NAME.len() - VERSION.len()) / 2;
-    out.set_color(PANELS_FOREGROUND, PANELS_BACKGROUND)?;
-    out.write_fmt(format_args!(
-        "{:<margin$}{NAME} {VERSION}{:<margin$}",
-        "", ""
-    ))
-    .unwrap();
-
-    Ok(())
-}
-
-fn footer(out: &mut Out, width: usize) -> Result<()> {
     let pages = ["Cpu", "Mem", "Pci", "Net"];
     let bindings = [("About", "F1"), ("Exit", "DEL")];
     let margin = width
@@ -42,6 +18,7 @@ fn footer(out: &mut Out, width: usize) -> Result<()> {
     draw_pages(out, &pages)?;
     out.write_fmt(format_args!("{:<margin$}", "")).unwrap();
     draw_keybindings(out, &bindings)?;
+
     Ok(())
 }
 
