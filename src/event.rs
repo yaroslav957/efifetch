@@ -1,6 +1,7 @@
 use crate::{
     In, Out,
     display::Display,
+    info::Info,
     utils::{minimize, resolution},
 };
 use uefi::{
@@ -17,6 +18,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     minimize(out)?;
 
     let display = Display::new(out)?;
+
     let [width, height] = resolution(out)?;
 
     if width < MIN_CONSOLE_WIDTH || height < MIN_CONSOLE_HEIGHT {
@@ -25,6 +27,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
 
     display.topbar(out)?;
     display.startscreen(out)?;
+    let info = Info::new()?;
     display.bottombar(out)?;
 
     loop {

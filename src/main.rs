@@ -3,6 +3,7 @@
 
 mod display;
 mod event;
+mod info;
 mod utils;
 
 use crate::event::event_handler;
