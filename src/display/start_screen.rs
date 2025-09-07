@@ -1,15 +1,12 @@
 use core::fmt::Write;
 
-use crate::{
-    Out,
-    display::{SCREEN_BACKGROUND, SCREEN_FOREGROUND},
-};
+use crate::{Out, display::Theme};
 use uefi::Result;
 
-pub fn draw(out: &mut Out, width: usize, height: usize) -> Result<()> {
-    out.set_color(SCREEN_FOREGROUND, SCREEN_BACKGROUND)?;
+pub fn draw(out: &mut Out, width: usize, height: usize, theme: Theme) -> Result<()> {
+    out.set_color(theme.foreground, theme.background)?;
 
-    let screen_height = height - 3;
+    let screen_height = height - 5;
     let margin = (width - "<switch to page>".len()) / 2;
 
     for i in 0..screen_height {

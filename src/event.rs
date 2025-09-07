@@ -1,6 +1,6 @@
 use crate::{
     In, Out,
-    display::Display,
+    display::{Display, Theme},
     info::Info,
     utils::{minimize, resolution},
 };
@@ -17,7 +17,10 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     out.clear()?;
     minimize(out)?;
 
-    let display = Display::new(out)?;
+    let _info = Info::new()?;
+    let mut display = Display::new(out)?;
+
+    display.change_theme(Theme::default());
 
     let [width, height] = resolution(out)?;
 
@@ -25,14 +28,15 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
         return Err(Error::new(Status::UNSUPPORTED, ()));
     }
 
-    display.topbar(out)?;
-    display.startscreen(out)?;
-    let info = Info::new()?;
-    display.bottombar(out)?;
+    display.top_bar(out)?;
+    display.start_screen(out)?;
+
+    inp.reset(true)?;
 
     loop {
         let mut events = [inp.wait_for_key_event().unwrap()];
         wait_for_event(&mut events).unwrap();
+
         if let Some(key) = inp.read_key()? {
             match key {
                 Special(ScanCode::FUNCTION_1) => (),
