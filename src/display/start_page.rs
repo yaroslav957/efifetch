@@ -1,6 +1,5 @@
-use core::fmt::Write;
-
 use crate::{Out, display::Theme};
+use core::fmt::Write;
 use uefi::Result;
 
 pub fn draw(out: &mut Out, width: usize, height: usize, theme: Theme) -> Result<()> {

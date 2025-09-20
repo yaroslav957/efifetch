@@ -29,9 +29,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     }
 
     display.top_bar(out)?;
-    display.start_screen(out)?;
-
-    inp.reset(true)?;
+    display.start_page(out)?;
 
     loop {
         let mut events = [inp.wait_for_key_event().unwrap()];
@@ -42,7 +40,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
                 Special(ScanCode::FUNCTION_1) => (),
                 Special(ScanCode::FUNCTION_2) => (),
                 Special(ScanCode::DELETE) => break,
-                _ => continue,
+                _ => display.memory_page(out, &_info).unwrap(),
             }
         }
     }

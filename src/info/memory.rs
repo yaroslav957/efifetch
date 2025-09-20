@@ -23,10 +23,10 @@ const MEMORY_TYPES: &[MemoryType] = &[
 
 #[allow(dead_code)]
 pub struct Memory {
-    total_memory: u64,
-    usable_memory: u64,
-    phys_start: u64,
-    virt_start: u64,
+    pub total_memory: u64,
+    pub usable_memory: u64,
+    pub phys_start: u64,
+    pub virt_start: u64,
 }
 
 impl Memory {
@@ -45,6 +45,7 @@ impl Memory {
         })
     }
 }
+
 fn count_memory(map: &MemoryMapOwned, types: &[MemoryType]) -> u64 {
     map.entries()
         .filter(|d| types.contains(&d.ty))

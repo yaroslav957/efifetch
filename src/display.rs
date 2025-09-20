@@ -1,11 +1,13 @@
-use crate::{Out, utils::resolution};
+use crate::{Out, info::Info, utils::resolution};
 use uefi::{Result, proto::console::text::Color};
 
 const EFIFETCH_THEME: Theme = Theme::new(Color::Red, Color::Black, Color::LightRed);
 pub const COMMON_THEME: Theme = Theme::new(Color::Black, Color::LightGray, Color::Red);
 pub const FALLOUT_THEME: Theme = Theme::new(Color::Green, Color::Black, Color::LightGreen);
+pub const MANGO_THEME: Theme = Theme::new(Color::Yellow, Color::Red, Color::White);
 
-mod start_screen;
+mod memory_page;
+mod start_page;
 mod top_bar;
 
 pub struct Display {
@@ -34,8 +36,12 @@ impl Display {
         top_bar::draw(out, self.width, self.theme)
     }
 
-    pub fn start_screen(&self, out: &mut Out) -> Result<()> {
-        start_screen::draw(out, self.width, self.height, self.theme)
+    pub fn start_page(&self, out: &mut Out) -> Result<()> {
+        start_page::draw(out, self.width, self.height, self.theme)
+    }
+
+    pub fn memory_page(&self, out: &mut Out, info: &Info) -> Result<()> {
+        memory_page::draw(out, self.width, self.theme, info)
     }
 }
 
