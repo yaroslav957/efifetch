@@ -1,4 +1,4 @@
-![Preview error](https://github.com/yaroslav957/efifetch/blob/master/previews/v0.1.9.0.png)
+![Preview error](https://github.com/yaroslav957/efifetch/blob/main/previews/v0.1.9.0.png)
 
 # How to use
 
