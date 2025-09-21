@@ -1,6 +1,27 @@
 use crate::{Out, info::Info, utils::resolution};
 use uefi::{Result, proto::console::text::Color};
 
+#[macro_export]
+macro_rules! draw {
+    ($out:expr, $($arg:tt)*) => {
+        $out.write_fmt(format_args!($($arg)*)).unwrap()
+    };
+}
+
+#[macro_export]
+macro_rules! color {
+    ($out:expr, $fg:expr, $bg:expr) => {
+        $out.set_color($fg, $bg).unwrap()
+    };
+}
+
+#[macro_export]
+macro_rules! cursor {
+    ($out:expr, $column:expr, $row:expr) => {
+        $out.set_cursor_position($column, $row).unwrap()
+    };
+}
+
 const EFIFETCH_THEME: Theme = Theme::new(Color::Red, Color::Black, Color::LightRed);
 pub const COMMON_THEME: Theme = Theme::new(Color::Black, Color::LightGray, Color::Red);
 pub const FALLOUT_THEME: Theme = Theme::new(Color::Green, Color::Black, Color::LightGreen);

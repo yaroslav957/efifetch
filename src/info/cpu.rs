@@ -7,6 +7,7 @@ const VMX: u32 = 1 << 5;
 const SMX: u32 = 1 << 6;
 
 #[repr(u32)]
+#[derive(Clone, Copy)]
 enum Leaf {
     Vendor = 0x0,
     Vmx = 0x1,
@@ -31,7 +32,7 @@ fn feature_support(cpuid: Leaf, bitmask: u32) -> bool {
 
 fn cpuid_info(buffer: &mut [u8; 12], cpuid: Leaf) {
     unsafe {
-        let CpuidResult { ebx, ecx, edx, .. } = __cpuid(&cpuid as _);
+        let CpuidResult { ebx, ecx, edx, .. } = __cpuid(cpuid as _);
         let cpuid_result = match cpuid {
             Leaf::Hypervisor => [ebx, ecx, edx],
             Leaf::Vendor => [ebx, edx, ecx],
