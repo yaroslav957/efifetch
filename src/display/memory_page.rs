@@ -13,9 +13,8 @@ pub fn draw(out: &mut Out, width: usize, theme: Theme, info: &Info) -> Result<()
 fn header(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
     let align = width - "[Memory Info]".len();
 
-    color!(out, theme.highlight, theme.background);
-    draw!(out, "[Memory Info]");
-    draw!(out, "{:<align$}", "");
+    draw!(out, theme.highlight, theme.background, "[Memory Info]");
+    draw!(out, theme.background, theme.background, "{:<align$}", "");
 
     Ok(())
 }
@@ -28,16 +27,28 @@ fn label(out: &mut Out, width: usize, theme: Theme, info: &Info) -> Result<()> {
         ("└─Virtual start: 0x", info.memory.virt_start),
     ];
 
-    color!(out, theme.foreground, theme.background);
-    draw_categories(out, width, categories)?;
+    draw_categories(out, width, theme, categories)?;
 
     Ok(())
 }
 
-fn draw_categories(out: &mut Out, width: usize, categories: &[(&str, u64)]) -> Result<()> {
+fn draw_categories(
+    out: &mut Out,
+    width: usize,
+    theme: Theme,
+    categories: &[(&str, u64)],
+) -> Result<()> {
     categories.iter().try_for_each(|(s, n)| {
         let align = width - s.chars().count() - digits_count(*n);
-        draw!(out, "{}{}{:<align$}", s, n, "");
+        draw!(
+            out,
+            theme.foreground,
+            theme.background,
+            "{}{}{:<align$}",
+            s,
+            n,
+            ""
+        );
 
         Ok(())
     })

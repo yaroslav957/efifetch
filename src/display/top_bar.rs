@@ -8,7 +8,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn draw(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
     header(out, width, theme);
     label(out, width, theme)?;
-    footer(out, width);
+    footer(out, width, theme);
 
     Ok(())
 }
@@ -18,8 +18,14 @@ fn header(out: &mut Out, width: usize, theme: Theme) {
     let margin_left = NAME.len() + VERSION.len() + symbols_count;
     let margin_right = width - margin_left - symbols_count;
 
-    color!(out, theme.foreground, theme.background);
-    draw!(out, "┌{:─<margin_left$}┬{:─<margin_right$}┐", "", "");
+    draw!(
+        out,
+        theme.foreground,
+        theme.background,
+        "┌{:─<margin_left$}┬{:─<margin_right$}┐",
+        "",
+        ""
+    );
 }
 
 fn label(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
@@ -35,28 +41,23 @@ fn label(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
 
     draw_package(out, theme);
     draw_pages(out, theme, pages)?;
-    draw!(out, "{:<margin$}", "");
+    draw!(out, theme.foreground, theme.background, "{:<margin$}", "");
     draw_keybindings(out, theme, bindings)?;
-    draw!(out, "│");
+    draw!(out, theme.foreground, theme.background, "│");
 
     Ok(())
 }
 
 fn draw_package(out: &mut Out, theme: Theme) {
-    color!(out, theme.foreground, theme.background);
-    draw!(out, "│");
-    color!(out, theme.highlight, theme.background);
-    draw!(out, " {NAME} {VERSION} ");
-    color!(out, theme.foreground, theme.background);
-    draw!(out, "│");
+    draw!(out, theme.foreground, theme.background, "│");
+    draw!(out, theme.highlight, theme.background, " {NAME} {VERSION} ");
+    draw!(out, theme.foreground, theme.background, "│");
 }
 
 fn draw_pages(out: &mut Out, theme: Theme, pages: &[&str]) -> Result<()> {
     pages.iter().try_for_each(|p| {
-        color!(out, theme.highlight, theme.background);
-        draw!(out, " {}", &p[0..1]);
-        color!(out, theme.foreground, theme.background);
-        draw!(out, "{} ", &p[1..]);
+        draw!(out, theme.highlight, theme.background, " {}", &p[0..1]);
+        draw!(out, theme.foreground, theme.background, "{} ", &p[1..]);
 
         Ok(())
     })
@@ -64,20 +65,24 @@ fn draw_pages(out: &mut Out, theme: Theme, pages: &[&str]) -> Result<()> {
 
 fn draw_keybindings(out: &mut Out, theme: Theme, bindings: &[(&str, &str)]) -> Result<()> {
     bindings.iter().try_for_each(|b| {
-        color!(out, theme.foreground, theme.background);
-        draw!(out, "{}:", b.0);
-        color!(out, theme.highlight, theme.background);
-        draw!(out, "{} ", b.1);
-        color!(out, theme.foreground, theme.background);
+        draw!(out, theme.foreground, theme.background, "{}:", b.0);
+        draw!(out, theme.highlight, theme.background, "{} ", b.1);
 
         Ok(())
     })
 }
 
-fn footer(out: &mut Out, width: usize) {
+fn footer(out: &mut Out, width: usize, theme: Theme) {
     let symbols_count = "└┴┘".chars().count();
     let margin_left = NAME.len() + VERSION.len() + symbols_count;
     let margin_right = width - margin_left - symbols_count;
 
-    draw!(out, "└{:─<margin_left$}┴{:─<margin_right$}┘", "", "");
+    draw!(
+        out,
+        theme.foreground,
+        theme.background,
+        "└{:─<margin_left$}┴{:─<margin_right$}┘",
+        "",
+        ""
+    );
 }

@@ -3,15 +3,9 @@ use uefi::{Result, proto::console::text::Color};
 
 #[macro_export]
 macro_rules! draw {
-    ($out:expr, $($arg:tt)*) => {
-        $out.write_fmt(format_args!($($arg)*)).unwrap()
-    };
-}
-
-#[macro_export]
-macro_rules! color {
-    ($out:expr, $fg:expr, $bg:expr) => {
-        $out.set_color($fg, $bg).unwrap()
+    ($out:expr, $fg:expr, $bg:expr, $($arg:tt)*) => {
+        $out.set_color($fg, $bg).unwrap();
+        $out.write_fmt(format_args!($($arg)*)).unwrap();
     };
 }
 
