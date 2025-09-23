@@ -1,4 +1,4 @@
-use crate::{Out, display::Theme, info::Info, utils::digits_count};
+use crate::{Out, display::Theme, draw, info::Info, utils::digits_count};
 use core::fmt::Write;
 use uefi::Result;
 

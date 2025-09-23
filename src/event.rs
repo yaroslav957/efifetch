@@ -1,6 +1,6 @@
 use crate::{
     In, Out,
-    display::{Display, Theme},
+    display::Display,
     info::Info,
     utils::{check_resolution, minimize, resolution},
 };
@@ -16,12 +16,10 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
 
     let info = Info::new()?;
     let [width, height] = resolution(out)?;
-    let theme = Theme::default();
-    let mut display = Display::new(out)?;
+    let display = Display::new(out)?;
 
     check_resolution(width, height)?.0;
 
-    display.change_theme(theme);
     display.top_bar(out)?;
     display.start_page(out)?;
 

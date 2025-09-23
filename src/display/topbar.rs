@@ -5,12 +5,24 @@ use uefi::Result;
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+pub enum PageState {
+    Main,
+    About,
+    Exit,
+}
+
 pub fn draw(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
     header(out, width, theme);
-    label(out, width, theme)?;
-    footer(out, width, theme);
+    //  label(out, width, theme)?;
+    //    footer(out, width, theme);
 
     Ok(())
+}
+
+fn update_page()
+
+fn header(out: &mut Out, width: usize, theme: Theme) {
+    let pages = &["Main", "About", "Exit"];
 }
 
 fn header(out: &mut Out, width: usize, theme: Theme) {
@@ -86,3 +98,4 @@ fn footer(out: &mut Out, width: usize, theme: Theme) {
         ""
     );
 }
+*/
