@@ -1,10 +1,16 @@
-mod memory_page;
 mod page;
-mod start_page;
 mod theme;
 mod topbar;
 
-use crate::{Out, display::theme::Theme, info::Info, utils::resolution};
+use crate::{
+    Out,
+    display::{
+        page::{main /* memory*/},
+        theme::Theme,
+    },
+    info::Info,
+    utils::resolution,
+};
 use uefi::Result;
 
 #[macro_export]
@@ -28,6 +34,7 @@ pub struct Display {
     theme: Theme,
 }
 
+#[allow(dead_code)]
 impl Display {
     pub fn new(out: &mut Out) -> Result<Self> {
         let [width, height] = resolution(out)?;
@@ -44,15 +51,15 @@ impl Display {
         self.theme = theme
     }
 
-    pub fn top_bar(&self, out: &mut Out) -> Result<()> {
+    pub fn topbar(&self, out: &mut Out) -> Result<()> {
         topbar::draw(out, self.width, self.theme)
     }
 
-    pub fn start_page(&self, out: &mut Out) -> Result<()> {
-        start_page::draw(out, self.width, self.height, self.theme)
+    pub fn main_page(&self, out: &mut Out) -> Result<()> {
+        main::draw(out, self.width, self.height, self.theme)
     }
 
     pub fn memory_page(&self, out: &mut Out, info: &Info) -> Result<()> {
-        memory_page::draw(out, self.width, self.theme, info)
+        Ok(()) // memory::draw(out, self.width, self.theme, info)
     }
 }

@@ -20,8 +20,8 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
 
     check_resolution(width, height)?.0;
 
-    display.top_bar(out)?;
-    display.start_page(out)?;
+    display.topbar(out)?;
+    display.main_page(out)?;
 
     loop {
         let mut events = [inp.wait_for_key_event().unwrap()];

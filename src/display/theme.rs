@@ -29,12 +29,12 @@ pub const COMMON_THEME: Theme = Theme::new(
 
 #[derive(Clone, Copy)]
 pub struct Theme {
-    topbar_fg: Color,
-    topbar_bg: Color,
-    page_fg: Color,
-    page_bg: Color,
-    highlight_fg: Color,
-    highlight_bg: Color,
+    pub topbar_fg: Color,
+    pub topbar_bg: Color,
+    pub page_fg: Color,
+    pub page_bg: Color,
+    pub highlight_fg: Color,
+    pub highlight_bg: Color,
 }
 
 impl Theme {
@@ -59,6 +59,6 @@ impl Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        EFIFETCH_THEME
+        COMMON_THEME
     }
 }
