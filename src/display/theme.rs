@@ -1,64 +1,45 @@
 use uefi::proto::console::text::Color;
 
 pub const EFIFETCH_THEME: Theme = Theme::new(
-    Color::Red,
-    Color::Black,
-    Color::Red,
-    Color::Black,
-    Color::LightRed,
-    Color::Black,
-);
-
-pub const FALLOUT_THEME: Theme = Theme::new(
-    Color::Green,
-    Color::Black,
-    Color::Green,
-    Color::Black,
-    Color::LightGreen,
-    Color::Black,
+    (Color::Red, Color::Black),
+    (Color::Red, Color::Black),
+    (Color::LightRed, Color::Black),
+    (Color::Black, Color::Red),
 );
 
 pub const COMMON_THEME: Theme = Theme::new(
-    Color::LightGray,
-    Color::Blue,
-    Color::Blue,
-    Color::LightGray,
-    Color::White,
-    Color::LightGray,
+    (Color::Blue, Color::LightGray),
+    (Color::LightGray, Color::Blue),
+    (Color::White, Color::LightGray),
+    (Color::White, Color::LightGray),
 );
 
 #[derive(Clone, Copy)]
 pub struct Theme {
-    pub topbar_fg: Color,
-    pub topbar_bg: Color,
-    pub page_fg: Color,
-    pub page_bg: Color,
-    pub highlight_fg: Color,
-    pub highlight_bg: Color,
+    pub page: (Color, Color),
+    pub topbar: (Color, Color),
+    pub page_highlite: (Color, Color),
+    pub topbar_highlite: (Color, Color),
 }
 
 impl Theme {
     pub const fn new(
-        topbar_fg: Color,
-        topbar_bg: Color,
-        page_fg: Color,
-        page_bg: Color,
-        highlight_fg: Color,
-        highlight_bg: Color,
+        page: (Color, Color),
+        topbar: (Color, Color),
+        page_highlite: (Color, Color),
+        topbar_highlite: (Color, Color),
     ) -> Self {
         Self {
-            topbar_fg,
-            topbar_bg,
-            page_fg,
-            page_bg,
-            highlight_fg,
-            highlight_bg,
+            page,
+            topbar,
+            page_highlite,
+            topbar_highlite,
         }
     }
 }
 
 impl Default for Theme {
     fn default() -> Self {
-        COMMON_THEME
+        EFIFETCH_THEME
     }
 }

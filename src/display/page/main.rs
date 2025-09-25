@@ -1,6 +1,6 @@
 use crate::{
     Out,
-    display::{Theme, page::Page, topbar::update},
+    display::{Theme, page::Page, topbar},
     draw,
 };
 use core::fmt::Write;
@@ -14,18 +14,26 @@ pub fn draw(out: &mut Out, width: usize, height: usize, theme: Theme) -> Result<
         if i == screen_height / 2 {
             draw!(
                 out,
-                theme.page_fg,
-                theme.page_bg,
+                theme.page.0,
+                theme.page.1,
                 "{:<margin$}<switch to page>{:<margin$}",
                 "",
                 ""
             );
         }
 
-        draw!(out, theme.page_fg, theme.page_bg, "{:<width$}", "");
+        draw!(out, theme.page.0, theme.page.1, "{:<width$}", "");
     });
 
-    update(out, theme, Page::Main)?;
+    topbar::update(out, theme, Page::Main)?;
+
+    uefi::boot::stall(2_000_000);
+
+    topbar::update(out, theme, Page::About)?;
+
+    uefi::boot::stall(2_000_000);
+
+    topbar::update(out, theme, Page::Exit)?;
 
     Ok(())
 }

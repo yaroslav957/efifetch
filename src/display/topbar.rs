@@ -12,7 +12,7 @@ pub fn draw(out: &mut Out, width: usize, theme: Theme) -> Result<()> {
     let margin = width - PAGES.iter().map(|p| p.len() + 2).sum::<usize>();
 
     draw_pages(out, theme, PAGES)?;
-    draw!(out, theme.topbar_fg, theme.topbar_bg, "{:<margin$}", "");
+    draw!(out, theme.topbar.0, theme.topbar.1, "{:<margin$}", "");
 
     Ok(())
 }
@@ -24,21 +24,36 @@ pub fn update(out: &mut Out, theme: Theme, page: Page) -> Result<()> {
     match page {
         Page::Main => {
             cursor!(out, 0, 0);
-            draw!(out, theme.page_fg, theme.page_bg, " Main ");
+            draw!(
+                out,
+                theme.topbar_highlite.0,
+                theme.topbar_highlite.1,
+                " Main "
+            );
 
             Ok(())
         }
 
         Page::About => {
             cursor!(out, 6, 0);
-            draw!(out, theme.page_fg, theme.page_bg, " About ");
+            draw!(
+                out,
+                theme.topbar_highlite.0,
+                theme.topbar_highlite.1,
+                " About "
+            );
 
             Ok(())
         }
 
         Page::Exit => {
             cursor!(out, 13, 0);
-            draw!(out, theme.page_fg, theme.page_bg, " Exit ");
+            draw!(
+                out,
+                theme.topbar_highlite.0,
+                theme.topbar_highlite.1,
+                " Exit "
+            );
 
             Ok(())
         }
@@ -47,8 +62,8 @@ pub fn update(out: &mut Out, theme: Theme, page: Page) -> Result<()> {
 
 fn draw_pages(out: &mut Out, theme: Theme, pages: &[&str]) -> Result<()> {
     pages.iter().try_for_each(|p| {
-        draw!(out, theme.highlight_fg, theme.topbar_bg, " {}", &p[0..1]);
-        draw!(out, theme.topbar_fg, theme.topbar_bg, "{} ", &p[1..]);
+        draw!(out, theme.page_highlite.0, theme.topbar.1, " {}", &p[0..1]);
+        draw!(out, theme.topbar.0, theme.topbar.1, "{} ", &p[1..]);
 
         Ok(())
     })
