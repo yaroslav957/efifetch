@@ -1,33 +1,39 @@
 use uefi::proto::console::text::Color;
 
 pub const EFIFETCH_THEME: Theme = Theme::new(
-    (Color::Red, Color::Black),
-    (Color::Red, Color::Black),
-    (Color::LightRed, Color::Black),
-    (Color::Black, Color::Red),
+    Palette::new(Color::Red, Color::Black),
+    Palette::new(Color::Red, Color::Black),
+    Palette::new(Color::LightRed, Color::Black),
+    Palette::new(Color::Black, Color::Red),
 );
 
 pub const COMMON_THEME: Theme = Theme::new(
-    (Color::Blue, Color::LightGray),
-    (Color::LightGray, Color::Blue),
-    (Color::White, Color::LightGray),
-    (Color::White, Color::LightGray),
+    Palette::new(Color::Blue, Color::LightGray),
+    Palette::new(Color::LightGray, Color::Blue),
+    Palette::new(Color::White, Color::LightGray),
+    Palette::new(Color::White, Color::LightGray),
 );
 
 #[derive(Clone, Copy)]
 pub struct Theme {
-    pub page: (Color, Color),
-    pub topbar: (Color, Color),
-    pub page_highlite: (Color, Color),
-    pub topbar_highlite: (Color, Color),
+    pub page: Palette,
+    pub topbar: Palette,
+    pub page_highlite: Palette,
+    pub topbar_highlite: Palette,
+}
+
+#[derive(Clone, Copy)]
+pub struct Palette {
+    pub fg: Color,
+    pub bg: Color,
 }
 
 impl Theme {
     pub const fn new(
-        page: (Color, Color),
-        topbar: (Color, Color),
-        page_highlite: (Color, Color),
-        topbar_highlite: (Color, Color),
+        page: Palette,
+        topbar: Palette,
+        page_highlite: Palette,
+        topbar_highlite: Palette,
     ) -> Self {
         Self {
             page,
@@ -41,5 +47,11 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Self {
         EFIFETCH_THEME
+    }
+}
+
+impl Palette {
+    pub const fn new(fg: Color, bg: Color) -> Self {
+        Self { fg, bg }
     }
 }

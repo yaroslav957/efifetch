@@ -1,22 +1,29 @@
 use crate::{
     In, Out,
-    display::Display,
+    display::{Display, page::Page},
     info::Info,
     utils::{check_resolution, minimize, resolution},
 };
 use uefi::{
-    Result, Status,
+    Char16, Result, Status,
     boot::{stall, wait_for_event},
-    proto::console::text::{Key::Special, ScanCode},
+    proto::console::text::{
+        Key::{Printable, Special},
+        ScanCode,
+    },
 };
+
+const KEY_M: Char16 = unsafe { Char16::from_u16_unchecked(0x006D) };
+const KEY_A: Char16 = unsafe { Char16::from_u16_unchecked(0x0061) };
+const KEY_E: Char16 = unsafe { Char16::from_u16_unchecked(0x0065) };
 
 pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     out.clear()?;
     minimize(out)?;
 
-    let info = Info::new()?;
+    let _ = Info::new()?;
     let [width, height] = resolution(out)?;
-    let display = Display::new(out)?;
+    let mut display = Display::new(out)?;
 
     check_resolution(width, height)?.0;
 
@@ -29,10 +36,22 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
 
         if let Some(key) = inp.read_key()? {
             match key {
-                Special(ScanCode::FUNCTION_1) => (),
-                Special(ScanCode::FUNCTION_2) => (),
-                Special(ScanCode::DELETE) => break,
-                _ => display.memory_page(out, &info).unwrap(), //TODO
+                Printable(KEY_M) => display.main_page(out)?,
+                Printable(KEY_A) => display.about_page(out)?,
+                Printable(KEY_E) => break,
+
+                Special(ScanCode::DOWN) => {
+                    if display.page() == Page::Main {
+                        display.next_category(out)
+                    }
+                }
+
+                Special(ScanCode::UP) => {
+                    if display.page() == Page::Main {
+                        display.prev_category(out)
+                    }
+                }
+                _ => (),
             }
         }
     }
