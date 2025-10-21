@@ -2,8 +2,9 @@ use crate::{
     In, Out,
     display::{Display, page::Page},
     info::Info,
-    utils::{check_resolution, minimize, resolution},
+    utils::{char16, check_resolution, minimize, resolution},
 };
+use core::time::Duration;
 use uefi::{
     Char16, Result, Status,
     boot::{stall, wait_for_event},
@@ -13,9 +14,9 @@ use uefi::{
     },
 };
 
-const KEY_M: Char16 = unsafe { Char16::from_u16_unchecked(0x006D) };
-const KEY_A: Char16 = unsafe { Char16::from_u16_unchecked(0x0061) };
-const KEY_E: Char16 = unsafe { Char16::from_u16_unchecked(0x0065) };
+const KEY_M: Char16 = char16(0x006D).unwrap();
+const KEY_A: Char16 = char16(0x0061).unwrap();
+const KEY_E: Char16 = char16(0x0065).unwrap();
 
 pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
     out.clear()?;
@@ -56,6 +57,6 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<Status> {
         }
     }
 
-    stall(700_000);
+    stall(Duration::from_secs(2));
     Ok(Status::SUCCESS)
 }
