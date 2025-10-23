@@ -40,8 +40,8 @@ impl Display {
     pub fn new(out: &mut Out) -> Result<Self> {
         let [width, height] = resolution(out)?;
         let theme = Theme::default();
-        let page = Page::Main;
-        let category = Category::Cpu;
+        let page = Page::default();
+        let category = Category::default();
 
         Ok(Self {
             width,
@@ -86,6 +86,12 @@ impl Display {
 
     pub fn topbar(&self, out: &mut Out) -> Result<()> {
         topbar::draw(out, self.width, self.theme)
+    }
+
+    pub fn default_page(&mut self, out: &mut Out) -> Result<()> {
+        self.page = Page::default();
+
+        about::draw(out, self.width, self.height, self.theme)
     }
 
     pub fn main_page(&mut self, out: &mut Out) -> Result<()> {
