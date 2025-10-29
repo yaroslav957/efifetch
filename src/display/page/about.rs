@@ -1,37 +1,61 @@
 use crate::{
     Out, cursor,
-    display::{Page, Theme, topbar},
+    display::{Display, Page},
     draw,
 };
 use core::fmt::Write;
 use uefi::Result;
 
-pub fn draw(out: &mut Out, width: usize, height: usize, theme: Theme) -> Result<()> {
-    let width = width - 2;
-    let height = height - 4;
+impl Display {
+    pub fn draw_about(&self, out: &mut Out) -> Result<()> {
+        cursor!(out, 0, 1);
+        self.header_about(out);
+        self.label_about(out)?;
+        self.footer_about(out);
 
-    cursor!(out, 0, 1);
-    header(out, width, theme);
-    label(out, width, height, theme)?;
-    footer(out, width, theme);
+        self.update_topbar(out, Page::About)?;
 
-    topbar::update(out, theme, Page::About)?;
+        Ok(())
+    }
 
-    Ok(())
-}
+    fn header_about(&self, out: &mut Out) {
+        let width = self.resolution.width - 2;
 
-fn header(out: &mut Out, width: usize, theme: Theme) {
-    draw!(out, theme.page.fg, theme.page.bg, "┌{:─<width$}┐", "");
-}
+        draw!(
+            out,
+            self.theme.page.fg,
+            self.theme.page.bg,
+            "┌{:─<width$}┐",
+            ""
+        );
+    }
 
-fn label(out: &mut Out, width: usize, height: usize, theme: Theme) -> Result<()> {
-    (0..height).for_each(|_| {
-        draw!(out, theme.page.fg, theme.page.bg, "│{:<width$}│", "");
-    });
+    fn label_about(&self, out: &mut Out) -> Result<()> {
+        let width = self.resolution.width - 2;
+        let height = self.resolution.height - 4;
 
-    Ok(())
-}
+        (0..height).for_each(|_| {
+            draw!(
+                out,
+                self.theme.page.fg,
+                self.theme.page.bg,
+                "│{:<width$}│",
+                ""
+            );
+        });
 
-fn footer(out: &mut Out, width: usize, theme: Theme) {
-    draw!(out, theme.page.fg, theme.page.bg, "└{:─<width$}┘", "");
+        Ok(())
+    }
+
+    fn footer_about(&self, out: &mut Out) {
+        let width = self.resolution.width - 2;
+
+        draw!(
+            out,
+            self.theme.page.fg,
+            self.theme.page.bg,
+            "└{:─<width$}┘",
+            ""
+        );
+    }
 }

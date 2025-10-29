@@ -5,12 +5,14 @@ pub mod topbar;
 use crate::{
     Out,
     display::{
-        page::{Category, Page, about, main},
+        page::{Category, Page},
         theme::Theme,
     },
-    utils::resolution,
 };
-use uefi::Result;
+use uefi::{Error, Result, Status};
+
+const MIN_CONSOLE_WIDTH: usize = 80;
+const MIN_CONSOLE_HEIGHT: usize = 25;
 
 #[macro_export]
 macro_rules! draw {
@@ -28,27 +30,31 @@ macro_rules! cursor {
 }
 
 pub struct Display {
-    width: usize,
-    height: usize,
     theme: Theme,
     page: Page,
     category: Category,
+    resolution: Resolution,
 }
 
 #[allow(dead_code)]
 impl Display {
+    fn clear(out: &mut Out) -> Result<()> {
+        out.clear()
+    }
+
     pub fn new(out: &mut Out) -> Result<Self> {
-        let [width, height] = resolution(out)?;
+        Display::clear(out)?;
+
         let theme = Theme::default();
         let page = Page::default();
         let category = Category::default();
+        let resolution = Resolution::new(out)?;
 
         Ok(Self {
-            width,
-            height,
             theme,
             page,
             category,
+            resolution,
         })
     }
 
@@ -65,44 +71,65 @@ impl Display {
     }
 
     pub fn next_category(&mut self, out: &mut Out) {
-        match self.category {
+        match self.category() {
             Category::Cpu => self.category = Category::Memory,
             Category::Memory => self.category = Category::PCI,
             Category::PCI => self.category = Category::Cpu,
         }
 
-        main::update(out, self.theme, self.category);
+        self.update_main(out, self.category);
     }
 
     pub fn prev_category(&mut self, out: &mut Out) {
-        match self.category {
+        match self.category() {
             Category::Cpu => self.category = Category::PCI,
             Category::Memory => self.category = Category::Cpu,
             Category::PCI => self.category = Category::Memory,
         }
 
-        main::update(out, self.theme, self.category);
-    }
-
-    pub fn topbar(&self, out: &mut Out) -> Result<()> {
-        topbar::draw(out, self.width, self.theme)
-    }
-
-    pub fn default_page(&mut self, out: &mut Out) -> Result<()> {
-        self.page = Page::default();
-
-        about::draw(out, self.width, self.height, self.theme)
+        self.update_main(out, self.category);
     }
 
     pub fn main_page(&mut self, out: &mut Out) -> Result<()> {
         self.page = Page::Main;
-
-        main::draw(out, self.width, self.height, self.theme)
+        self.draw_main(out)
     }
 
     pub fn about_page(&mut self, out: &mut Out) -> Result<()> {
         self.page = Page::About;
+        self.draw_about(out)
+    }
+}
 
-        about::draw(out, self.width, self.height, self.theme)
+#[derive(Clone, Copy, Eq, PartialEq)]
+pub struct Resolution {
+    pub width: usize,
+    pub height: usize,
+}
+
+impl Resolution {
+    fn minimize(out: &mut Out) -> Result<()> {
+        let min_mode = out
+            .modes()
+            .min()
+            .ok_or(Error::new(Status::UNSUPPORTED, ()))?;
+
+        out.set_mode(min_mode)
+    }
+
+    pub fn new(out: &mut Out) -> Result<Self> {
+        Resolution::minimize(out)?;
+
+        let mode = out
+            .current_mode()?
+            .ok_or(Error::new(Status::UNSUPPORTED, ()))?;
+        let width = mode.columns();
+        let height = mode.rows();
+
+        if width < MIN_CONSOLE_WIDTH || height < MIN_CONSOLE_HEIGHT {
+            Err(Error::new(Status::UNSUPPORTED, ()))
+        } else {
+            Ok(Self { width, height })
+        }
     }
 }

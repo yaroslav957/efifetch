@@ -2,6 +2,14 @@ use crate::{Out, cursor, display::Theme, draw, info::Info, utils::digits_count};
 use core::fmt::Write;
 use uefi::Result;
 
+pub fn digits_count(num: u64) -> usize {
+    if num.eq(&0) {
+        1
+    } else {
+        num.ilog10() as usize + 1
+    }
+}
+
 pub fn draw(out: &mut Out, width: usize, theme: Theme, info: &Info) -> Result<()> {
     cursor!(out, 0, 3);
     header(out, width, theme)?;
