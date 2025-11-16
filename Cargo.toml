@@ -2,8 +2,10 @@
 name = "efifetch"
 authors = ["Yaroslav Lobachev"]
 categories = ["embedded", "uefi"]
+description = "UEFI application for fetching hardware info, written in Rust"
 repository = "https://github.com/yaroslav957/efifetch"
 keywords = ["uefi", "fetch", "efi", "osdev"]
+rust-version = "1.90"
 version = "0.2.0"
 edition = "2024"
 license = "MIT"

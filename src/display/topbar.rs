@@ -78,8 +78,8 @@ impl Display {
         pages.iter().try_for_each(|p| {
             draw!(
                 out,
-                self.theme.page_highlite.fg,
-                self.theme.topbar.bg,
+                self.theme.topbar_keys_highlite.fg,
+                self.theme.topbar_keys_highlite.bg,
                 "{:<INDENT$}{}",
                 "",
                 &p[0..1]

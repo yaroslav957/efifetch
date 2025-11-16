@@ -1,6 +1,6 @@
 use crate::{
     Out, cursor,
-    display::{Category, Display, Page},
+    display::{Category, Display},
     draw,
 };
 use core::fmt::Write;
@@ -19,8 +19,6 @@ impl Display {
         self.header_main(out);
         self.label_main(out)?;
         self.footer_main(out);
-
-        self.update_topbar(out, Page::Main)?;
         self.update_main(out, Category::Cpu);
 
         Ok(())

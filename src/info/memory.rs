@@ -1,3 +1,4 @@
+use crate::info::U32Buffer;
 use uefi::{
     Result,
     boot::{MemoryType, PAGE_SIZE, memory_map},
@@ -23,19 +24,21 @@ const MEMORY_TYPES: &[MemoryType] = &[
 
 #[allow(dead_code)]
 pub struct Memory {
-    pub total_memory: u64,
-    pub usable_memory: u64,
-    pub phys_start: u64,
-    pub virt_start: u64,
+    pub total_memory: U32Buffer,
+    pub usable_memory: U32Buffer,
+    pub phys_start: U32Buffer,
+    pub virt_start: U32Buffer,
 }
 
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
-
-        let total_memory = count_memory(&map, MEMORY_TYPES);
-        let usable_memory = count_memory(&map, &[MemoryType::CONVENTIONAL]);
-        let (phys_start, virt_start) = find_start(&map);
+        let total_memory = U32Buffer::new(Memory::count_memory(&map, MEMORY_TYPES));
+        let usable_memory = U32Buffer::new(Memory::count_memory(&map, &[MemoryType::CONVENTIONAL]));
+        let (phys_start, virt_start) = {
+            let starts = Memory::find_start(&map);
+            (U32Buffer::new(starts.0), U32Buffer::new(starts.1))
+        };
 
         Ok(Self {
             total_memory,
@@ -44,19 +47,19 @@ impl Memory {
             virt_start,
         })
     }
-}
 
-fn count_memory(map: &MemoryMapOwned, types: &[MemoryType]) -> u64 {
-    map.entries()
-        .filter(|d| types.contains(&d.ty))
-        .map(|d| d.page_count * PAGE_SIZE as u64)
-        .sum::<u64>()
-        .div_ceil(MB)
-}
+    fn count_memory(map: &MemoryMapOwned, types: &[MemoryType]) -> u32 {
+        map.entries()
+            .filter(|d| types.contains(&d.ty))
+            .map(|d| d.page_count * PAGE_SIZE as u64)
+            .sum::<u64>()
+            .div_ceil(MB) as u32
+    }
 
-fn find_start(map: &MemoryMapOwned) -> (u64, u64) {
-    map.entries()
-        .find(|d| d.ty == MemoryType::CONVENTIONAL)
-        .map(|d| (d.phys_start, d.virt_start))
-        .unwrap_or_default()
+    fn find_start(map: &MemoryMapOwned) -> (u32, u32) {
+        map.entries()
+            .find(|d| d.ty == MemoryType::CONVENTIONAL)
+            .map(|d| (d.phys_start as u32, d.virt_start as u32))
+            .unwrap_or_default()
+    }
 }

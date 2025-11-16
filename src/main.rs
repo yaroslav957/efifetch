@@ -43,7 +43,7 @@ pub fn main() -> Status {
 }
 
 pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<()> {
-    let _info = Info::new()?;
+    let info = Info::new()?;
     let mut display = Display::new(out)?;
 
     display.draw_topbar(out)?;
@@ -58,7 +58,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<()> {
         if let Some(key) = inp.read_key()? {
             match key {
                 Printable(consts::KEY_M) => display.main_page(out)?,
-                Printable(consts::KEY_A) => display.about_page(out)?,
+                Printable(consts::KEY_A) => display.about_page(out, &info)?,
                 Printable(consts::KEY_E) => break,
 
                 Special(ScanCode::DOWN) => {

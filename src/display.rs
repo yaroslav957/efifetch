@@ -8,6 +8,7 @@ use crate::{
         page::{Category, Page},
         theme::Theme,
     },
+    info::Info,
 };
 use uefi::{Error, Result, Status};
 
@@ -92,12 +93,14 @@ impl Display {
 
     pub fn main_page(&mut self, out: &mut Out) -> Result<()> {
         self.page = Page::Main;
-        self.draw_main(out)
+        self.draw_main(out)?;
+        self.update_topbar(out, Page::Main)
     }
 
-    pub fn about_page(&mut self, out: &mut Out) -> Result<()> {
+    pub fn about_page(&mut self, out: &mut Out, info: &Info) -> Result<()> {
         self.page = Page::About;
-        self.draw_about(out)
+        self.draw_about(out, info)?;
+        self.update_topbar(out, Page::About)
     }
 }
 
