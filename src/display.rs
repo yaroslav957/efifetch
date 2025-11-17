@@ -31,13 +31,12 @@ macro_rules! cursor {
 }
 
 pub struct Display {
-    theme: Theme,
-    page: Page,
-    category: Category,
-    resolution: Resolution,
+    pub page: Page,
+    pub theme: Theme,
+    pub category: Category,
+    pub resolution: Resolution,
 }
 
-#[allow(dead_code)]
 impl Display {
     fn clear(out: &mut Out) -> Result<()> {
         out.clear()
@@ -52,55 +51,45 @@ impl Display {
         let resolution = Resolution::new(out)?;
 
         Ok(Self {
-            theme,
             page,
+            theme,
             category,
             resolution,
         })
     }
 
-    pub fn page(&self) -> Page {
-        self.page
-    }
-
-    pub fn category(&self) -> Category {
-        self.category
-    }
-
-    pub fn change_theme(&mut self, theme: Theme) {
-        self.theme = theme
-    }
-
     pub fn next_category(&mut self, out: &mut Out) {
-        match self.category() {
+        match self.category {
             Category::Cpu => self.category = Category::Memory,
             Category::Memory => self.category = Category::PCI,
             Category::PCI => self.category = Category::Cpu,
         }
 
-        self.update_main(out, self.category);
+        self.update_main(out);
     }
 
     pub fn prev_category(&mut self, out: &mut Out) {
-        match self.category() {
+        match self.category {
             Category::Cpu => self.category = Category::PCI,
             Category::Memory => self.category = Category::Cpu,
             Category::PCI => self.category = Category::Memory,
         }
 
-        self.update_main(out, self.category);
+        self.update_main(out);
     }
 
     pub fn main_page(&mut self, out: &mut Out) -> Result<()> {
         self.page = Page::Main;
+
         self.draw_main(out)?;
-        self.update_topbar(out, Page::Main)
+        self.update_topbar(out)
     }
 
     pub fn about_page(&mut self, out: &mut Out, info: &Info) -> Result<()> {
         self.page = Page::About;
+
         self.draw_about(out, info)?;
-        self.update_topbar(out, Page::About)
+        self.update_topbar(out)
     }
 }
 
@@ -126,6 +115,7 @@ impl Resolution {
         let mode = out
             .current_mode()?
             .ok_or(Error::new(Status::UNSUPPORTED, ()))?;
+
         let width = mode.columns();
         let height = mode.rows();
 

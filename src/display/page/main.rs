@@ -3,68 +3,82 @@ use crate::{
     display::{Category, Display},
     draw,
 };
-use core::fmt::Write;
+use core::fmt::{Arguments, Write};
 use uefi::Result;
 
 const INDENT: usize = 1;
 const LABEL_WIDTH: usize = 14;
-const CATEGORIES: &[&str] = &["Cpu", "Memory", "PCI"];
-const MARGIN_CPU: usize = LABEL_WIDTH - CATEGORIES[0].len() - INDENT;
-const MARGIN_MEM: usize = LABEL_WIDTH - CATEGORIES[1].len() - INDENT;
-const MARGIN_PCI: usize = LABEL_WIDTH - CATEGORIES[2].len() - INDENT;
+const CATEGORIES: [&str; 3] = ["Cpu", "Memory", "PCI"];
+const CATEGORIES_MARGIN: [usize; 3] = [
+    margin(CATEGORIES[0]),
+    margin(CATEGORIES[1]),
+    margin(CATEGORIES[2]),
+];
 
 impl Display {
     pub fn draw_main(&self, out: &mut Out) -> Result<()> {
         cursor!(out, 0, 1);
         self.header_main(out);
-        self.label_main(out)?;
+        self.label_main(out);
         self.footer_main(out);
-        self.update_main(out, Category::Cpu);
+        self.update_main(out);
 
         Ok(())
     }
 
-    pub fn update_main(&self, out: &mut Out, category: Category) {
+    pub fn update_main(&self, out: &mut Out) {
         self.clear_categories(out);
 
-        match category {
-            Category::Cpu => {
-                cursor!(out, 1, 2);
-                draw!(
-                    out,
-                    self.theme.topbar_highlite.fg,
-                    self.theme.topbar_highlite.bg,
-                    " Cpu{:<MARGIN_CPU$}",
-                    ""
-                );
-            }
+        match self.category {
+            Category::Cpu => self.update_main_category(
+                out,
+                2,
+                format_args!(
+                    "{:<INDENT$}{}{:<margin$}",
+                    "",
+                    CATEGORIES[0],
+                    "",
+                    margin = CATEGORIES_MARGIN[0]
+                ),
+            ),
+            Category::Memory => self.update_main_category(
+                out,
+                3,
+                format_args!(
+                    "{:<INDENT$}{}{:<margin$}",
+                    "",
+                    CATEGORIES[1],
+                    "",
+                    margin = CATEGORIES_MARGIN[1],
+                ),
+            ),
 
-            Category::Memory => {
-                cursor!(out, 1, 3);
-                draw!(
-                    out,
-                    self.theme.topbar_highlite.fg,
-                    self.theme.topbar_highlite.bg,
-                    " Memory{:<MARGIN_MEM$}",
-                    ""
-                );
-            }
-
-            Category::PCI => {
-                cursor!(out, 1, 4);
-                draw!(
-                    out,
-                    self.theme.topbar_highlite.fg,
-                    self.theme.topbar_highlite.bg,
-                    " PCI{:<MARGIN_PCI$}",
-                    ""
-                );
-            }
+            Category::PCI => self.update_main_category(
+                out,
+                4,
+                format_args!(
+                    "{:<INDENT$}{}{:<margin$}",
+                    "",
+                    CATEGORIES[2],
+                    "",
+                    margin = CATEGORIES_MARGIN[2]
+                ),
+            ),
         }
     }
 
+    fn update_main_category(&self, out: &mut Out, pos: usize, label: Arguments) {
+        cursor!(out, INDENT, pos);
+        draw!(
+            out,
+            self.theme.topbar_highlite.fg,
+            self.theme.topbar_highlite.bg,
+            "{label}",
+        );
+    }
+
     fn header_main(&self, out: &mut Out) {
-        let width = self.resolution.width - 17;
+        let width = self.resolution.width - LABEL_WIDTH - INDENT * 3;
 
         draw!(
             out,
@@ -76,20 +90,20 @@ impl Display {
         );
     }
 
-    fn label_main(&self, out: &mut Out) -> Result<()> {
-        let width = self.resolution.width - 17;
-        let height = self.resolution.height - 4;
+    fn label_main(&self, out: &mut Out) {
+        let width = self.resolution.width - LABEL_WIDTH - INDENT * 3;
+        let height = self.resolution.height - INDENT * 4;
 
-        (0..height).try_for_each(|i| {
-            if let Some(page) = CATEGORIES.get(i) {
-                let margin_left = LABEL_WIDTH - INDENT - CATEGORIES[i].len();
+        (0..height).for_each(|i| {
+            if let Some(category) = CATEGORIES.get(i)
+                && let Some(margin) = CATEGORIES_MARGIN.get(i)
+            {
                 draw!(
                     out,
                     self.theme.page.fg,
                     self.theme.page.bg,
-                    "│{:<INDENT$}{}{:<margin_left$}│{:<width$}│",
+                    "│{:<INDENT$}{category}{:<margin$}│{:<width$}│",
                     "",
-                    page,
                     "",
                     ""
                 );
@@ -103,13 +117,11 @@ impl Display {
                     ""
                 );
             }
-
-            Ok(())
-        })
+        });
     }
 
     fn footer_main(&self, out: &mut Out) {
-        let width = self.resolution.width - 17;
+        let width = self.resolution.width - LABEL_WIDTH - INDENT * 3;
 
         draw!(
             out,
@@ -122,29 +134,25 @@ impl Display {
     }
 
     fn clear_categories(&self, out: &mut Out) {
-        cursor!(out, 1, 2);
-        draw!(
-            out,
-            self.theme.page.fg,
-            self.theme.page.bg,
-            " Cpu{:<MARGIN_CPU$}",
-            ""
-        );
-        cursor!(out, 1, 3);
-        draw!(
-            out,
-            self.theme.page.fg,
-            self.theme.page.bg,
-            " Memory{:<MARGIN_MEM$}",
-            ""
-        );
-        cursor!(out, 1, 4);
-        draw!(
-            out,
-            self.theme.page.fg,
-            self.theme.page.bg,
-            " PCI{:<MARGIN_PCI$}",
-            ""
-        );
+        (2..=4).for_each(|i| {
+            if let Some(category) = CATEGORIES.get(i - 2)
+                && let Some(margin) = CATEGORIES_MARGIN.get(i - 2)
+            {
+                cursor!(out, INDENT, i);
+                draw!(
+                    out,
+                    self.theme.page.fg,
+                    self.theme.page.bg,
+                    "{:<INDENT$}{category}{:<margin$}",
+                    "",
+                    ""
+                );
+            }
+        });
     }
+}
+
+const fn margin(label: &str) -> usize {
+    // Waiting for const `.chars().count()` day 1
+    LABEL_WIDTH - label.len() - INDENT
 }

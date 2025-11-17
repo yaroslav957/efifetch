@@ -4,6 +4,7 @@ mod memory;
 use crate::info::{firmware::Firmware, memory::Memory};
 use uefi::Result;
 
+#[allow(dead_code)]
 pub struct Info {
     pub firmware: Firmware,
     pub memory: Memory,
@@ -31,7 +32,7 @@ impl U32Buffer {
     }
 
     pub fn as_str(&self) -> &str {
-        str::from_utf8(&self.buf[..self.len]).unwrap_or_default()
+        unsafe { str::from_utf8_unchecked(&self.buf[..self.len]) }
     }
 
     fn format(mut num: u32, buf: &mut [u8; 10]) -> usize {

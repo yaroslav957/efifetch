@@ -1,11 +1,11 @@
 pub mod about;
 pub mod main;
-//pub mod memory;
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, Eq, PartialEq, Default)]
 pub enum Page {
-    Main,
     #[default]
+    Main,
     About,
     Exit,
 }

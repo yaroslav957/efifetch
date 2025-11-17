@@ -1,6 +1,6 @@
 use crate::info::U32Buffer;
 use uefi::{
-    Result,
+    Error, Result, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapOwned},
 };
@@ -34,9 +34,9 @@ impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
         let total_memory = U32Buffer::new(Memory::count_memory(&map, MEMORY_TYPES));
-        let usable_memory = U32Buffer::new(Memory::count_memory(&map, &[MemoryType::CONVENTIONAL]));
+        let usable_memory = U32Buffer::new(Memory::count_memory(&map, &[MEMORY_TYPES[0]]));
         let (phys_start, virt_start) = {
-            let starts = Memory::find_start(&map);
+            let starts = Memory::find_start(&map)?;
             (U32Buffer::new(starts.0), U32Buffer::new(starts.1))
         };
 
@@ -56,10 +56,10 @@ impl Memory {
             .div_ceil(MB) as u32
     }
 
-    fn find_start(map: &MemoryMapOwned) -> (u32, u32) {
+    fn find_start(map: &MemoryMapOwned) -> Result<(u32, u32)> {
         map.entries()
             .find(|d| d.ty == MemoryType::CONVENTIONAL)
             .map(|d| (d.phys_start as u32, d.virt_start as u32))
-            .unwrap_or_default()
+            .ok_or(Error::new(Status::UNSUPPORTED, ()))
     }
 }

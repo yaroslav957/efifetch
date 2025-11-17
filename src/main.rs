@@ -62,13 +62,13 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<()> {
                 Printable(consts::KEY_E) => break,
 
                 Special(ScanCode::DOWN) => {
-                    if display.page() == Page::Main {
+                    if display.page == Page::Main {
                         display.next_category(out)
                     }
                 }
 
                 Special(ScanCode::UP) => {
-                    if display.page() == Page::Main {
+                    if display.page == Page::Main {
                         display.prev_category(out)
                     }
                 }
