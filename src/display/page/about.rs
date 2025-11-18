@@ -7,7 +7,6 @@ use crate::{
     info::Info,
 };
 use core::fmt::Write;
-use uefi::Result;
 
 const INDENT: usize = 1;
 const BLANK_LINE: &str = "";
