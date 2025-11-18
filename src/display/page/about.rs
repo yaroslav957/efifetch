@@ -27,13 +27,11 @@ const LABELS: &[&str] = &[
 ];
 
 impl Display {
-    pub fn draw_about(&self, out: &mut Out, info: &Info) -> Result<()> {
+    pub fn draw_about(&self, out: &mut Out, info: &Info) {
         cursor!(out, 0, 1);
         self.header_about(out);
-        self.label_about(out, info)?;
+        self.label_about(out, info);
         self.footer_about(out);
-
-        Ok(())
     }
 
     fn header_about(&self, out: &mut Out) {
@@ -48,7 +46,7 @@ impl Display {
         );
     }
 
-    fn label_about(&self, out: &mut Out, info: &Info) -> Result<()> {
+    fn label_about(&self, out: &mut Out, info: &Info) {
         let width = self.resolution.width - INDENT * 2;
         let height = self.resolution.height - INDENT * 4;
         let revision = info.firmware.revision.as_str();
@@ -71,7 +69,7 @@ impl Display {
             theme,
         ];
 
-        (0..height).try_for_each(|i| {
+        (0..height).for_each(|i| {
             if let Some(label_name) = LABELS.get(i)
                 && let Some(label_content) = content.get(i)
             {
@@ -110,8 +108,6 @@ impl Display {
                     ""
                 );
             }
-
-            Ok(())
         })
     }
 

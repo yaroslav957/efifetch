@@ -4,20 +4,19 @@ use crate::{
     draw,
 };
 use core::fmt::Write;
-use uefi::Result;
 
 const INDENT: usize = 1;
 const PAGES: &[&str] = &["Main", "About", "Exit"];
 
 impl Display {
-    pub fn draw_topbar(&self, out: &mut Out) -> Result<()> {
+    pub fn draw_topbar(&self, out: &mut Out) {
         let margin = self.resolution.width
             - PAGES
                 .iter()
                 .map(|p| p.chars().count() + INDENT * 2)
                 .sum::<usize>();
 
-        self.draw_pages(out, PAGES)?;
+        self.draw_pages(out, PAGES);
         draw!(
             out,
             self.theme.topbar.fg,
@@ -25,13 +24,11 @@ impl Display {
             "{:<margin$}",
             ""
         );
-
-        Ok(())
     }
 
-    pub fn update_topbar(&self, out: &mut Out) -> Result<()> {
+    pub fn update_topbar(&self, out: &mut Out) {
         cursor!(out, 0, 0);
-        self.draw_pages(out, PAGES)?;
+        self.draw_pages(out, PAGES);
 
         match self.page {
             Page::Main => self.update_topbar_page(out, 0, "Main"),
@@ -40,7 +37,7 @@ impl Display {
         }
     }
 
-    fn update_topbar_page(&self, out: &mut Out, pos: usize, label: &str) -> Result<()> {
+    fn update_topbar_page(&self, out: &mut Out, pos: usize, label: &str) {
         cursor!(out, pos, 0);
         draw!(
             out,
@@ -50,12 +47,10 @@ impl Display {
             "",
             ""
         );
-
-        Ok(())
     }
 
-    fn draw_pages(&self, out: &mut Out, pages: &[&str]) -> Result<()> {
-        pages.iter().try_for_each(|p| {
+    fn draw_pages(&self, out: &mut Out, pages: &[&str]) {
+        pages.iter().for_each(|p| {
             draw!(
                 out,
                 self.theme.topbar_keys_highlite.fg,
@@ -72,8 +67,6 @@ impl Display {
                 &p[1..],
                 ""
             );
-
-            Ok(())
-        })
+        });
     }
 }

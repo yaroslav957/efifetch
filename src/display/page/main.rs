@@ -4,7 +4,6 @@ use crate::{
     draw,
 };
 use core::fmt::{Arguments, Write};
-use uefi::Result;
 
 const INDENT: usize = 1;
 const LABEL_WIDTH: usize = 14;
@@ -16,14 +15,12 @@ const CATEGORIES_MARGIN: [usize; 3] = [
 ];
 
 impl Display {
-    pub fn draw_main(&self, out: &mut Out) -> Result<()> {
+    pub fn draw_main(&self, out: &mut Out) {
         cursor!(out, 0, 1);
         self.header_main(out);
         self.label_main(out);
         self.footer_main(out);
         self.update_main(out);
-
-        Ok(())
     }
 
     pub fn update_main(&self, out: &mut Out) {

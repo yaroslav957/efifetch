@@ -78,17 +78,17 @@ impl Display {
         self.update_main(out);
     }
 
-    pub fn main_page(&mut self, out: &mut Out) -> Result<()> {
+    pub fn main_page(&mut self, out: &mut Out) {
         self.page = Page::Main;
 
-        self.draw_main(out)?;
+        self.draw_main(out);
         self.update_topbar(out)
     }
 
-    pub fn about_page(&mut self, out: &mut Out, info: &Info) -> Result<()> {
+    pub fn about_page(&mut self, out: &mut Out, info: &Info) {
         self.page = Page::About;
 
-        self.draw_about(out, info)?;
+        self.draw_about(out, info);
         self.update_topbar(out)
     }
 }
