@@ -1,21 +1,27 @@
+mod date;
 mod firmware;
 mod memory;
 
-use crate::info::{firmware::Firmware, memory::Memory};
+use crate::info::{date::Date, firmware::Firmware, memory::Memory};
 use uefi::Result;
 
-#[allow(dead_code)]
 pub struct Info {
+    pub date: Date,
     pub firmware: Firmware,
     pub memory: Memory,
 }
 
 impl Info {
     pub fn new() -> Result<Self> {
+        let date = Date::new()?;
         let firmware = Firmware::new();
         let memory = Memory::new()?;
 
-        Ok(Self { firmware, memory })
+        Ok(Self {
+            date,
+            firmware,
+            memory,
+        })
     }
 }
 
