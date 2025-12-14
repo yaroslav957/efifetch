@@ -1,5 +1,5 @@
 use crate::info::U32Buffer;
-use uefi::Result;
+use uefi::{Result, runtime::get_time};
 
 pub struct Date {
     pub hour: U32Buffer,
@@ -11,7 +11,7 @@ pub struct Date {
 
 impl Date {
     pub fn new() -> Result<Self> {
-        let time = uefi::runtime::get_time()?;
+        let time = get_time()?;
 
         let day = U32Buffer::new(time.day() as u32);
         let month = U32Buffer::new(time.month() as u32);

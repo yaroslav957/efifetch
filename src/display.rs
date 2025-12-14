@@ -85,10 +85,10 @@ impl Display {
         self.update_topbar(out)
     }
 
-    pub fn about_page(&mut self, out: &mut Out, info: &Info) {
+    pub fn about_page(&mut self, out: &mut Out) {
         self.page = Page::About;
 
-        self.draw_about(out, info);
+        self.draw_about(out);
         self.update_topbar(out)
     }
 }

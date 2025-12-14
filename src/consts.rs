@@ -1,5 +1,6 @@
 use uefi::Char16;
 
+pub const LOGO: &str = include_str!("../src/assets/uefi.logo");
 pub const MSRV: &str = env!("CARGO_PKG_RUST_VERSION");
 pub const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
 pub const LICENSE: &str = env!("CARGO_PKG_LICENSE");

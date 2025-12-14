@@ -59,7 +59,7 @@ pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<()> {
         if let Some(key) = inp.read_key()? {
             match key {
                 Printable(KEY_M) => display.main_page(out),
-                Printable(KEY_A) => display.about_page(out, &info),
+                Printable(KEY_A) => display.about_page(out),
                 Printable(KEY_E) => break,
 
                 Special(ScanCode::DOWN) => {

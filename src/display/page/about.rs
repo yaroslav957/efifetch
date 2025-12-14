@@ -1,35 +1,28 @@
 use crate::{
     Out,
-    consts::{AUTHOR, DESCRIPTION, LICENSE, MSRV, REPOSITORY, VERSION},
+    consts::{AUTHOR, DESCRIPTION, LICENSE, LOGO, MSRV, REPOSITORY, VERSION},
     cursor,
     display::Display,
     draw,
-    info::Info,
 };
 use core::fmt::Write;
 
 const INDENT: usize = 1;
-const BLANK_LINE: &str = "";
 const LABELS: &[&str] = &[
-    "Firmware revision:",
-    "Firmware vendor:",
-    "UEFI revesion:",
-    BLANK_LINE,
     "MSRV:",
     "License:",
     "Version:",
     "Made by:",
     "Repo:",
     "Description:",
-    BLANK_LINE,
-    "Theme:",
 ];
 
 impl Display {
-    pub fn draw_about(&self, out: &mut Out, info: &Info) {
+    pub fn draw_about(&self, out: &mut Out) {
         cursor!(out, 0, 1);
         self.header_about(out);
-        self.label_about(out, info);
+        self.logo_about(out);
+        self.label_about(out);
         self.footer_about(out);
     }
 
@@ -45,27 +38,31 @@ impl Display {
         );
     }
 
-    fn label_about(&self, out: &mut Out, info: &Info) {
+    fn logo_about(&self, out: &mut Out) {
+        LOGO.lines().for_each(|line| {
+            let width = (self.resolution.width - INDENT * 2 - line.chars().count()) / 2;
+            draw!(
+                out,
+                self.theme.page.fg,
+                self.theme.page.bg,
+                "│{:<width$}{line}{:<width$}│",
+                "",
+                ""
+            );
+        });
+    }
+
+    fn label_about(&self, out: &mut Out) {
         let width = self.resolution.width - INDENT * 2;
-        let height = self.resolution.height - INDENT * 4;
-        let revision = info.firmware.revision.as_str();
-        let vendor = info.firmware.vendor;
-        let uefi_revision = info.firmware.uefi_revision.as_str();
-        let theme = self.theme.name;
+        let height = self.resolution.height - INDENT * 4 - 15;
 
         let content = [
-            revision,
-            vendor,
-            uefi_revision,
-            BLANK_LINE,
             MSRV,
             LICENSE,
             VERSION,
             AUTHOR,
             &REPOSITORY[8..],
             DESCRIPTION,
-            BLANK_LINE,
-            theme,
         ];
 
         (0..height).for_each(|i| {
