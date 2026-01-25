@@ -1,49 +1,17 @@
-![Preview error](https://github.com/yaroslav957/efifetch/blob/main/previews/v0.1.9.0.png)
+# Notes
+I want **efifetch** to evolve in a utilitarian direction and become something more than just a "for fun" project like other fetch tools. Therefore, I want to add its own small, from-scratch **TUI engine**. Efifetch `0.2.0` will remain a **read-only interface** for retrieving hardware information.
 
-# How to use
-
-## In a VM
-1. Download dependencies and firmware files (Fedora linux):
-```
-sudo dnf install qemu-kvm edk2-ovmf
-```
-
-```
-cp /usr/share/OVMF/OVMF_CODE.fd .
-cp /usr/share/OVMF/OVMF_VARS.fd .
-```
-
-2. Prepare dir and copy efifetch.efi:
-```
-mkdir -p esp/efi/boot && cp efifetch.efi esp/efi/boot/bootx64.efi
-```
-
-3. Run VM:
-```
-qemu-system-x86_64 -enable-kvm \
--drive if=pflash,format=raw,readonly=on,file=OVMF_CODE.fd \
--drive if=pflash,format=raw,readonly=on,file=OVMF_VARS.fd \
--drive format=raw,file=fat:rw:esp
-```
-
-## On hardware
-
-Efifetch has never been tested on real hardware. Use it on a real device at your own risk
-
-# Info & todos
-
-TODO list:
-- PCI configuration space 
-- PCIe MMIO (optional idk)
-- CPU MSRs (AMD and Intel)
-- SMBIOS data
-- SMBUS data (partially working)
-- CPU frequency
-- UEFI configuration tables
-- UEFI variables
-- ACPI tables
-- Read LBA from HDD
-- AHCI MMIO (optional)
-- INT15 E820 tables (optional)
-- Fix resolution issues with serialport0 on QEMU
-
+# TODOs
+## Tier 1
+- [ ] Rewrite the TUI
+- [ ] Add AARCH64 support
+- [ ] Refactor the core architecture
+- [ ] Update existing modules:
+  - [ ] CPU
+  - [ ] Firmware
+## Tier 2
+- [ ] Add more modules:
+  - [ ] PCI/PCIe
+  - [ ] ACPI
+## Tier 3
+- [ ] Update MSRV (Minimum Supported Rust Version)
