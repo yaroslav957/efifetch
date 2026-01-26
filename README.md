@@ -29,21 +29,3 @@ qemu-system-x86_64 -enable-kvm \
 ## On hardware
 
 Efifetch has never been tested on real hardware. Use it on a real device at your own risk
-
-# Info & todos
-
-TODO list:
-- PCI configuration space 
-- PCIe MMIO (optional idk)
-- CPU MSRs (AMD and Intel)
-- SMBIOS data
-- SMBUS data (partially working)
-- CPU frequency
-- UEFI configuration tables
-- UEFI variables
-- ACPI tables
-- Read LBA from HDD
-- AHCI MMIO (optional)
-- INT15 E820 tables (optional)
-- Fix resolution issues with serialport0 on QEMU
-
