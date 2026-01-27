@@ -1,4 +1,4 @@
-use crate::info::U32Buffer;
+use crate::utils::U32Buffer;
 use uefi::{
     Error, Result, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
@@ -22,12 +22,12 @@ const MEMORY_TYPES: &[MemoryType] = &[
     MemoryType::MMIO_PORT_SPACE,
 ];
 
-#[allow(dead_code)]
+#[derive(Clone, Copy)]
 pub struct Memory {
-    pub total_memory: U32Buffer,
-    pub usable_memory: U32Buffer,
-    pub phys_start: U32Buffer,
-    pub virt_start: U32Buffer,
+    total_memory: U32Buffer,
+    usable_memory: U32Buffer,
+    phys_start: U32Buffer,
+    virt_start: U32Buffer,
 }
 
 impl Memory {
@@ -46,6 +46,22 @@ impl Memory {
             phys_start,
             virt_start,
         })
+    }
+
+    pub fn total_memory(&self) -> U32Buffer {
+        self.total_memory
+    }
+
+    pub fn usable_memory(&self) -> U32Buffer {
+        self.usable_memory
+    }
+
+    pub fn phys_start(&self) -> U32Buffer {
+        self.phys_start
+    }
+
+    pub fn virt_start(&self) -> U32Buffer {
+        self.virt_start
     }
 
     fn count_memory(map: &MemoryMapOwned, types: &[MemoryType]) -> u32 {

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 mod date;
 mod firmware;
 mod memory;
@@ -5,10 +7,11 @@ mod memory;
 use crate::info::{date::Date, firmware::Firmware, memory::Memory};
 use uefi::Result;
 
+#[derive(Clone, Copy)]
 pub struct Info {
-    pub date: Date,
-    pub firmware: Firmware,
-    pub memory: Memory,
+    date: Date,
+    firmware: Firmware,
+    memory: Memory,
 }
 
 impl Info {
@@ -23,47 +26,16 @@ impl Info {
             memory,
         })
     }
-}
 
-pub struct U32Buffer {
-    pub buf: [u8; 10],
-    pub len: usize,
-}
-
-impl U32Buffer {
-    pub fn new(num: u32) -> Self {
-        let mut buf = [0u8; 10];
-        let len = U32Buffer::format(num, &mut buf);
-        Self { buf, len }
+    pub fn date(&self) -> Date {
+        self.date
     }
 
-    pub fn as_str(&self) -> &str {
-        unsafe { str::from_utf8_unchecked(&self.buf[..self.len]) }
+    pub fn firmware(&self) -> Firmware {
+        self.firmware
     }
 
-    fn format(mut num: u32, buf: &mut [u8; 10]) -> usize {
-        let mut pos = 10;
-        let mut len = 10;
-
-        if num == 0 {
-            buf[0] = b'0';
-            return 1;
-        }
-
-        while num > 0 {
-            pos -= 1;
-            buf[pos] = b'0' + (num % 10) as u8;
-            num /= 10;
-        }
-
-        len = len - pos;
-
-        if pos > 0 {
-            for i in 0..len {
-                buf[i] = buf[pos + i];
-            }
-        }
-
-        len
+    pub fn memory(&self) -> Memory {
+        self.memory
     }
 }

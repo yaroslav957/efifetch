@@ -10,6 +10,7 @@ I want **efifetch** to evolve in a utilitarian direction and become something mo
   - [ ] CPU
   - [ ] Firmware
 ## Tier 2
+- [ ] Add all resolutions
 - [ ] Add more modules:
   - [ ] PCI/PCIe
   - [ ] ACPI
