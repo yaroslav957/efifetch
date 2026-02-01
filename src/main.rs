@@ -42,6 +42,6 @@ pub fn main() -> Status {
 }
 
 pub fn on_draw(mut canvas: Canvas) -> Result<()> {
-    canvas.draw_topbar()?.draw_grid()?;
+    canvas.draw_topbar()?.draw_grid()?.update_grid()?;
     Ok(())
 }

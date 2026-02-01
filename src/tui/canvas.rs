@@ -1,13 +1,23 @@
-use crate::{error::Result, tui::Theme};
+use crate::{
+    error::Result,
+    tui::{Page, Theme},
+};
 use core::fmt::Write;
 use uefi::{
-    Error, Status,
-    boot::ScopedProtocol,
+    Error, ResultExt, Status,
+    boot::{ScopedProtocol, wait_for_event},
     proto::console::text::{Color, Input, Output, OutputMode},
 };
 
-const PAGE_NAMES: [&str; 6] =
-    [" Main ", " FIRMWARE ", " CPU ", " RAM ", " PCI ", " Exit "];
+const PAGE_NAMES: [&str; 7] = [
+    " Main ",
+    " Firmware ",
+    " Cpu ",
+    " Ram ",
+    " Pci ",
+    " Acpi ",
+    " Exit ",
+];
 const TL: char = '┌';
 const TR: char = '┐';
 const VL: char = '│';
@@ -18,8 +28,8 @@ pub struct Canvas {
     inp: ScopedProtocol<Input>,
     out: ScopedProtocol<Output>,
     mode: OutputMode,
-    theme: Theme,
-    /*    cursor: Page, */
+    pub theme: Theme,
+    pub page: Page,
 }
 
 impl Canvas {
@@ -32,6 +42,7 @@ impl Canvas {
             Status::UNSUPPORTED,
             "The are no available resolutions",
         ))?;
+        let page = Page::default();
 
         out.set_mode(mode)?;
         out.clear()?;
@@ -42,6 +53,7 @@ impl Canvas {
             out,
             mode,
             theme,
+            page,
         })
     }
 
@@ -60,6 +72,7 @@ impl Canvas {
         PAGE_NAMES
             .iter()
             .try_for_each(|page| write!(self.out, "{page}"))?;
+
         write!(self.out, "{:<topbar_margin$}", "")?;
 
         Ok(self)
@@ -76,12 +89,32 @@ impl Canvas {
         )?;
 
         write!(self.out, "{TL}{:─<topgrid_margin$}{TR}", "")?;
+
+        // Skip 4 rows: topbar, top border, bottom border,
+        // and reserved row for newline
+        // to prevent topbar from being pushed off-screen
         (0..self.mode.rows() - 4).try_for_each(|_| {
             write!(self.out, "{VL}{:<midgrid_margin$}{VL}", "")
         })?;
+
         write!(self.out, "{BL}{:─<botgrid_margin$}{BR}", "")?;
 
         Ok(self)
+    }
+
+    pub fn update_grid(&mut self) -> Result<()> {
+        loop {
+            let mut events =
+                [self.inp.wait_for_key_event().ok_or(Error::new(
+                    Status::UNSUPPORTED,
+                    "Input device not available or unsupported",
+                ))?];
+            wait_for_event(&mut events).discard_errdata()?;
+
+            // to be done
+        }
+
+        Ok(())
     }
 
     fn grid_margin(&mut self, left: char, right: char) -> usize {

@@ -30,7 +30,7 @@ impl U32Buffer {
             num /= 10;
         }
 
-        len = len - pos;
+        len -= pos;
 
         if pos > 0 {
             for i in 0..len {
