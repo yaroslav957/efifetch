@@ -1,5 +1,5 @@
-use crate::utils::U32Buffer;
-use uefi::{Result, runtime::get_time};
+use crate::{error::Result, utils::U32Buffer};
+use uefi::runtime::get_time;
 
 #[derive(Clone, Copy)]
 pub struct Date {

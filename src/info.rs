@@ -4,14 +4,16 @@ mod date;
 mod firmware;
 mod memory;
 
-use crate::info::{date::Date, firmware::Firmware, memory::Memory};
-use uefi::Result;
+use crate::{
+    error::Result,
+    info::{date::Date, firmware::Firmware, memory::Memory},
+};
 
 #[derive(Clone, Copy)]
 pub struct Info {
-    date: Date,
-    firmware: Firmware,
-    memory: Memory,
+    pub date: Date,
+    pub firmware: Firmware,
+    pub memory: Memory,
 }
 
 impl Info {
@@ -25,17 +27,5 @@ impl Info {
             firmware,
             memory,
         })
-    }
-
-    pub fn date(&self) -> Date {
-        self.date
-    }
-
-    pub fn firmware(&self) -> Firmware {
-        self.firmware
-    }
-
-    pub fn memory(&self) -> Memory {
-        self.memory
     }
 }

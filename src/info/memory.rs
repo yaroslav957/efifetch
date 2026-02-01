@@ -1,6 +1,6 @@
-use crate::utils::U32Buffer;
+use crate::{error::Result, utils::U32Buffer};
 use uefi::{
-    Error, Result, Status,
+    Error, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapOwned},
 };
@@ -33,8 +33,10 @@ pub struct Memory {
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
-        let total_memory = U32Buffer::new(Memory::count_memory(&map, MEMORY_TYPES));
-        let usable_memory = U32Buffer::new(Memory::count_memory(&map, &[MEMORY_TYPES[0]]));
+        let total_memory =
+            U32Buffer::new(Memory::count_memory(&map, MEMORY_TYPES));
+        let usable_memory =
+            U32Buffer::new(Memory::count_memory(&map, &[MEMORY_TYPES[0]]));
         let (phys_start, virt_start) = {
             let starts = Memory::find_start(&map)?;
             (U32Buffer::new(starts.0), U32Buffer::new(starts.1))
@@ -76,6 +78,12 @@ impl Memory {
         map.entries()
             .find(|d| d.ty == MemoryType::CONVENTIONAL)
             .map(|d| (d.phys_start as u32, d.virt_start as u32))
-            .ok_or(Error::new(Status::UNSUPPORTED, ()))
+            .ok_or(
+                Error::new(
+                    Status::UNSUPPORTED,
+                    "Conventional memory not available",
+                )
+                .into(),
+            )
     }
 }

@@ -30,8 +30,9 @@ impl Firmware {
 
     pub fn vendor(&self) -> &'static str {
         match self.vendor.as_bytes() {
-            EDKII_VENDOR => "EDK II",
+            AMI_VENDOR => "Aptio V",
             INSYDE_VENDOR => "InsydeH2O",
+            TIANOCORE_VENDOR => "EDK II",
             _ => "Unknown",
         }
     }
