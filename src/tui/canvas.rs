@@ -1,14 +1,23 @@
 use crate::{
+    consts::env::{
+        AUTHOR, DESCRIPTION, LICENSE, LOGO, MSRV, NAME, REPOSITORY, VERSION,
+    },
     error::Result,
+    info::Info,
     tui::{Page, Theme},
 };
-use core::fmt::Write;
+use core::{fmt::Write, str::Lines};
 use uefi::{
     Error, ResultExt, Status,
     boot::{ScopedProtocol, wait_for_event},
     proto::console::text::{Color, Input, Output, OutputMode},
 };
 
+const TL: char = '┌';
+const TR: char = '┐';
+const VL: char = '│';
+const BL: char = '└';
+const BR: char = '┘';
 const PAGE_NAMES: [&str; 7] = [
     " Main ",
     " Firmware ",
@@ -18,16 +27,21 @@ const PAGE_NAMES: [&str; 7] = [
     " Acpi ",
     " Exit ",
 ];
-const TL: char = '┌';
-const TR: char = '┐';
-const VL: char = '│';
-const BL: char = '└';
-const BR: char = '┘';
+const MAIN_PAGE: [(&str, &str); 7] = [
+    ("Name: ", NAME),
+    ("Made by: ", AUTHOR),
+    ("Description: ", DESCRIPTION),
+    ("Build version: ", VERSION),
+    ("License: ", LICENSE),
+    ("Repo: ", REPOSITORY),
+    ("Minimal Rust version: ", MSRV),
+];
+const EXIT_PAGE: [(&str, &str); 1] = [("", "")];
 
 pub struct Canvas {
-    inp: ScopedProtocol<Input>,
-    out: ScopedProtocol<Output>,
-    mode: OutputMode,
+    pub inp: ScopedProtocol<Input>,
+    pub out: ScopedProtocol<Output>,
+    pub mode: OutputMode,
     pub theme: Theme,
     pub page: Page,
 }
@@ -102,7 +116,23 @@ impl Canvas {
         Ok(self)
     }
 
-    pub fn update_grid(&mut self) -> Result<()> {
+    pub fn update_grid(&mut self, info: Info) -> Result<()> {
+        let logo = LOGO.lines();
+        let firmware_page = [
+            ("Revision: ", info.firmware.revision().as_str()),
+            ("Vendor: ", info.firmware.vendor()),
+            ("uefi revision: ", info.firmware.uefi_revision().as_str()),
+        ];
+        let cpu_page = [("")];
+        let ram_page = [
+            ("All memory: ", info.memory.total_memory().as_str()),
+            ("Usable memory: ", info.memory.usable_memory().as_str()),
+            ("Physical ptr start: ", info.memory.phys_start().as_str()),
+            ("Virtual ptr start: ", info.memory.virt_start().as_str()),
+        ];
+        let pci_page = [("")];
+        let acpi_page = [("")];
+
         loop {
             let mut events =
                 [self.inp.wait_for_key_event().ok_or(Error::new(
@@ -114,6 +144,16 @@ impl Canvas {
             // to be done
         }
 
+        Ok(())
+    }
+
+    fn draw_page(&mut self) -> Result<()> {
+        self.out.set_cursor_position(0, 0)?;
+
+        Ok(())
+    }
+
+    fn draw_logo(&mut self, logo: Lines) -> Result<()> {
         Ok(())
     }
 

@@ -30,18 +30,19 @@ pub fn main() -> Status {
     let inp = open_protocol_exclusive::<Input>(inp_handle).unwrap();
     let out = open_protocol_exclusive::<Output>(out_handle).unwrap();
 
-    let _info = Info::new().unwrap();
+    let info = Info::new().unwrap();
     let theme = Theme::default();
     let canvas = tui::Canvas::new(inp, out, theme).unwrap();
 
-    on_draw(canvas).unwrap();
+    on_draw(canvas, info).unwrap();
 
     // Exit without boot-options jumpscare
     stall(Duration::from_secs(3));
     Status::SUCCESS
 }
 
-pub fn on_draw(mut canvas: Canvas) -> Result<()> {
-    canvas.draw_topbar()?.draw_grid()?.update_grid()?;
+pub fn on_draw(mut canvas: Canvas, info: Info) -> Result<()> {
+    canvas.draw_topbar()?.draw_grid()?.update_grid(info)?;
+
     Ok(())
 }
