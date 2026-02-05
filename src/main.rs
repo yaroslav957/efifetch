@@ -1,48 +1,55 @@
+//! TODO: Rewrite Shell args parsing with my own tiny cli-args parser lib,
+//! called `Tenu` (https://github.com/yaroslav957/tenu).
+//! The crate has no dependencies on alloc and none are planned.
+
 #![no_std]
 #![no_main]
 
 mod consts;
 mod error;
 mod info;
-mod tui;
-mod utils;
+mod output;
 
-use crate::{
-    error::Result,
-    info::Info,
-    tui::{Canvas, Theme},
-};
-use core::time::Duration;
+use crate::{error::Result, info::Info};
 use uefi::{
     Status,
-    boot::{get_handle_for_protocol, open_protocol_exclusive, stall},
-    entry, helpers,
-    proto::console::text::{Input, Output},
+    boot::{get_handle_for_protocol, image_handle, open_protocol_exclusive},
+    entry,
+    proto::{console::text::Output, shell_params::ShellParameters},
 };
 
 #[entry]
-pub fn main() -> Status {
-    helpers::init().unwrap();
+fn main() -> Status {
+    if let Err(e) = run() {
+        return e.status();
+    };
 
-    let inp_handle = get_handle_for_protocol::<Input>().unwrap();
-    let out_handle = get_handle_for_protocol::<Output>().unwrap();
-
-    let inp = open_protocol_exclusive::<Input>(inp_handle).unwrap();
-    let out = open_protocol_exclusive::<Output>(out_handle).unwrap();
-
-    let info = Info::new().unwrap();
-    let theme = Theme::default();
-    let canvas = tui::Canvas::new(inp, out, theme).unwrap();
-
-    on_draw(canvas, info).unwrap();
-
-    // Exit without boot-options jumpscare
-    stall(Duration::from_secs(3));
     Status::SUCCESS
 }
 
-pub fn on_draw(mut canvas: Canvas, info: Info) -> Result<()> {
-    canvas.draw_topbar()?.draw_grid()?.update_grid(info)?;
+#[allow(unused)]
+pub fn run() -> Result<()> {
+    // Handles
+    let ih = image_handle();
+    let oh = get_handle_for_protocol::<Output>()?;
+
+    // Protocols
+    let params = open_protocol_exclusive::<ShellParameters>(ih)?;
+    let stdout = open_protocol_exclusive::<Output>(oh)?;
+
+    // Crate structs
+    let info = Info::new()?;
+
+    /*
+    let theme = Theme::default()
+
+    match params.args() { ... }
+    output::print(&mut stdout, info, theme, page)?;
+    */
+
+    for arg in params.args() {
+        uefi::println!("{arg}");
+    }
 
     Ok(())
 }

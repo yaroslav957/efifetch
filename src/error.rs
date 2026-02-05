@@ -1,10 +1,21 @@
 use core::{error, fmt, result};
+use uefi::Status;
 
 #[non_exhaustive]
 pub enum Error {
     Uefi(uefi::Status),
     UefiData(uefi::Status, &'static str),
     Fmt(fmt::Error),
+}
+
+impl Error {
+    pub fn status(&self) -> Status {
+        match self {
+            Error::Uefi(status) => *status,
+            Error::UefiData(status, _) => *status,
+            _ => Status::ABORTED, // Generic err
+        }
+    }
 }
 
 impl fmt::Debug for Error {

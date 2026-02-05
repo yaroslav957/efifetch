@@ -1,11 +1,11 @@
-use crate::{error::Result, utils::U32Buffer};
+use crate::error::Result;
 use uefi::{
     Error, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapOwned},
 };
 
-const MB: u64 = 1024 * 1024;
+const MB: u64 = 1048576;
 const MEMORY_TYPES: &[MemoryType] = &[
     MemoryType::CONVENTIONAL,
     MemoryType::RESERVED,
@@ -24,22 +24,20 @@ const MEMORY_TYPES: &[MemoryType] = &[
 
 #[derive(Clone, Copy)]
 pub struct Memory {
-    total_memory: U32Buffer,
-    usable_memory: U32Buffer,
-    phys_start: U32Buffer,
-    virt_start: U32Buffer,
+    total_memory: u32,
+    usable_memory: u32,
+    phys_start: u32,
+    virt_start: u32,
 }
 
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
-        let total_memory =
-            U32Buffer::new(Memory::count_memory(&map, MEMORY_TYPES));
-        let usable_memory =
-            U32Buffer::new(Memory::count_memory(&map, &[MEMORY_TYPES[0]]));
+        let total_memory = Memory::count_memory(&map, MEMORY_TYPES);
+        let usable_memory = Memory::count_memory(&map, &[MEMORY_TYPES[0]]);
         let (phys_start, virt_start) = {
             let starts = Memory::find_start(&map)?;
-            (U32Buffer::new(starts.0), U32Buffer::new(starts.1))
+            (starts.0, starts.1)
         };
 
         Ok(Self {
@@ -50,19 +48,19 @@ impl Memory {
         })
     }
 
-    pub fn total_memory(&self) -> U32Buffer {
+    pub fn total_memory(&self) -> u32 {
         self.total_memory
     }
 
-    pub fn usable_memory(&self) -> U32Buffer {
+    pub fn usable_memory(&self) -> u32 {
         self.usable_memory
     }
 
-    pub fn phys_start(&self) -> U32Buffer {
+    pub fn phys_start(&self) -> u32 {
         self.phys_start
     }
 
-    pub fn virt_start(&self) -> U32Buffer {
+    pub fn virt_start(&self) -> u32 {
         self.virt_start
     }
 
