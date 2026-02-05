@@ -1,3 +1,4 @@
 target/
 OVMF_CODE.fd
 OVMF_VARS.fd
+esp/efifetch.efi

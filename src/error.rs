@@ -3,8 +3,8 @@ use uefi::Status;
 
 #[non_exhaustive]
 pub enum Error {
-    Uefi(uefi::Status),
-    UefiData(uefi::Status, &'static str),
+    Uefi(Status),
+    UefiData(Status, &'static str),
     Fmt(fmt::Error),
 }
 
