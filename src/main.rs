@@ -10,13 +10,31 @@ mod error;
 mod info;
 mod output;
 
-use crate::{error::Result, info::Info};
+const HELP: &str = r"usage: efifetch [options]
+  options:
+    -h, --help  Print help
+    -l, --logo  Print info with uefi/vendor logo
+";
+
+use crate::{
+    error::Result,
+    info::Info,
+    output::{draw, theme::Theme},
+};
+use core::fmt::Write;
+use heapless::{String, Vec};
 use uefi::{
-    Status,
+    CStr16, Status,
     boot::{get_handle_for_protocol, image_handle, open_protocol_exclusive},
     entry,
     proto::{console::text::Output, shell_params::ShellParameters},
 };
+
+#[derive(Default)]
+struct Flags {
+    help: bool,
+    logo: bool,
+}
 
 #[entry]
 fn main() -> Status {
@@ -27,28 +45,57 @@ fn main() -> Status {
     Status::SUCCESS
 }
 
-#[allow(unused)]
-pub fn run() -> Result<()> {
+fn run() -> Result<()> {
     // Handles
     let ih = image_handle();
     let oh = get_handle_for_protocol::<Output>()?;
 
     // Protocols
     let params = open_protocol_exclusive::<ShellParameters>(ih)?;
-    let stdout = open_protocol_exclusive::<Output>(oh)?;
+    let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
-    // Crate structs
+    //TODO:
+    let mut args: Vec<String<64>, 16> = Vec::new();
+    let mut flags = Flags::default();
+
     let info = Info::new()?;
+    let theme = Theme::RED;
 
-    /*
-    let theme = Theme::default()
+    convert(params.args(), &mut args)?;
+    parse(args, &mut flags)?;
 
-    match params.args() { ... }
-    output::print(&mut stdout, info, theme, page)?;
-    */
+    if flags.help {
+        writeln!(stdout, "{HELP}")?;
 
-    for arg in params.args() {
-        uefi::println!("{arg}");
+        return Ok(());
+    }
+
+    draw(&mut stdout, info, theme, flags.logo)?;
+
+    Ok(())
+}
+
+fn convert<'c, I>(args: I, vec: &mut Vec<String<64>, 16>) -> Result<()>
+where
+    I: Iterator<Item = &'c CStr16>,
+{
+    for arg in args.skip(1) {
+        let buf = arg.to_u16_slice();
+        let string = String::from_utf16(buf)?;
+
+        _ = vec.push(string)
+    }
+
+    Ok(())
+}
+
+fn parse(args: Vec<String<64>, 16>, flags: &mut Flags) -> Result<()> {
+    for arg in args.iter() {
+        match arg.as_str() {
+            "-h" | "--help" => flags.help = true,
+            "-l" | "--logo" => flags.logo = true,
+            _ => flags.help = true,
+        }
     }
 
     Ok(())

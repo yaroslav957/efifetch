@@ -1,10 +1,13 @@
 use core::{error, fmt, result};
+use heapless::string::FromUtf16Error;
 use uefi::Status;
 
+#[derive(Debug)]
 #[non_exhaustive]
 pub enum Error {
     Uefi(Status),
     UefiData(Status, &'static str),
+    Utf16(FromUtf16Error),
     Fmt(fmt::Error),
 }
 
@@ -13,21 +16,7 @@ impl Error {
         match self {
             Error::Uefi(status) => *status,
             Error::UefiData(status, _) => *status,
-            _ => Status::ABORTED, // Generic err
-        }
-    }
-}
-
-impl fmt::Debug for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::Uefi(status) => {
-                write!(f, "[efifetch] UEFI error: {}", status)
-            }
-            Error::UefiData(status, data) => {
-                write!(f, "[efifetch] UEFI error {}: {}", status, data)
-            }
-            Error::Fmt(e) => write!(f, "[efifetch] Stdout/fmt error: {}", e),
+            _ => Status::ABORTED,
         }
     }
 }
@@ -35,11 +24,12 @@ impl fmt::Debug for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Uefi(status) => write!(f, "UEFI error: {}", status),
+            Error::Uefi(status) => write!(f, "UEFI error: {status}"),
             Error::UefiData(status, data) => {
-                write!(f, "UEFI error {}: {}", status, data)
+                write!(f, "UEFI error: {status}, with data: {data}")
             }
-            Error::Fmt(e) => write!(f, "Stdout/fmt error: {}", e),
+            Error::Utf16(e) => write!(f, "Invalid UTF16 sequence: {e}"),
+            Error::Fmt(e) => write!(f, "Stdout/fmt error: {e}"),
         }
     }
 }
@@ -62,6 +52,12 @@ impl From<uefi::Error> for Error {
 impl From<uefi::Error<&'static str>> for Error {
     fn from(e: uefi::Error<&'static str>) -> Self {
         Error::UefiData(e.status(), e.data())
+    }
+}
+
+impl From<FromUtf16Error> for Error {
+    fn from(e: FromUtf16Error) -> Self {
+        Error::Utf16(e)
     }
 }
 
