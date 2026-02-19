@@ -24,10 +24,10 @@ const MEMORY_TYPES: &[MemoryType] = &[
 
 #[derive(Clone, Copy)]
 pub struct Memory {
-    total_memory: u32,
-    usable_memory: u32,
-    phys_start: u32,
-    virt_start: u32,
+    pub total_memory: u32,
+    pub usable_memory: u32,
+    pub phys_start: u32,
+    pub virt_start: u32,
 }
 
 impl Memory {
@@ -46,22 +46,6 @@ impl Memory {
             phys_start,
             virt_start,
         })
-    }
-
-    pub fn total_memory(&self) -> u32 {
-        self.total_memory
-    }
-
-    pub fn usable_memory(&self) -> u32 {
-        self.usable_memory
-    }
-
-    pub fn phys_start(&self) -> u32 {
-        self.phys_start
-    }
-
-    pub fn virt_start(&self) -> u32 {
-        self.virt_start
     }
 
     fn count_memory(map: &MemoryMapOwned, types: &[MemoryType]) -> u32 {

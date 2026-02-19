@@ -3,11 +3,11 @@ use uefi::runtime::get_time;
 
 #[derive(Clone, Copy)]
 pub struct Date {
-    day: u8,
-    hour: u8,
-    minute: u8,
-    month: u8,
-    year: u16,
+    pub day: u8,
+    pub hour: u8,
+    pub minute: u8,
+    pub month: u8,
+    pub year: u16,
 }
 
 impl Date {

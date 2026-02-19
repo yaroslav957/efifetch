@@ -9,9 +9,9 @@ const SIZE: usize = 255 * 3 + 1;
 
 #[derive(Clone)]
 pub struct Firmware {
-    revision: u32,
-    vendor: String<SIZE>,
-    uefi_revision: u32,
+    pub revision: u32,
+    pub vendor: String<SIZE>,
+    pub uefi_revision: u32,
 }
 
 impl Firmware {
@@ -28,13 +28,5 @@ impl Firmware {
             vendor,
             uefi_revision,
         })
-    }
-
-    pub fn revision(&self) -> u32 {
-        self.revision
-    }
-
-    pub fn uefi_revision(&self) -> u32 {
-        self.uefi_revision
     }
 }

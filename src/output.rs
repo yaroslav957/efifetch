@@ -1,8 +1,6 @@
 pub mod theme;
 
-use crate::{
-    consts::env::LOGO, error::Result, info::Info, output::theme::Theme,
-};
+use crate::{error::Result, info::Info, output::theme::Theme};
 use core::fmt::Write;
 use uefi::{boot::ScopedProtocol, proto::console::text::Output};
 
@@ -19,19 +17,25 @@ pub fn draw(
     logo: bool,
 ) -> Result<()> {
     if logo {
-        draw_logo(stdout, theme)?;
+        draw_logo(stdout, info, theme)?;
     }
 
     stdout.set_color(theme.label.foreground, theme.label.background)?;
-    // write!(stdout, "{:?}", info)?;
+    //write!(stdout, "{:?}", info)?;
 
     Ok(())
 }
 
-fn draw_logo(stdout: &mut ScopedProtocol<Output>, theme: Theme) -> Result<()> {
+fn draw_logo(
+    stdout: &mut ScopedProtocol<Output>,
+    info: Info,
+    theme: Theme,
+) -> Result<()> {
     stdout.set_color(theme.logo.foreground, theme.logo.background)?;
 
-    for line in LOGO.lines() {
+    let logo = info.env.logo;
+
+    for line in logo.lines() {
         writeln!(stdout, "{line}")?
     }
 

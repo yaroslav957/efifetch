@@ -21,6 +21,12 @@ impl Theme {
         Palette::new(Color::Red, Color::Black),
         Palette::new(Color::LightRed, Color::Black),
     );
+    pub const GREEN: Theme = Theme::new(
+        "GREEN",
+        Palette::new(Color::LightGreen, Color::Black),
+        Palette::new(Color::Green, Color::Black),
+        Palette::new(Color::LightGreen, Color::Black),
+    );
 
     pub const fn new(
         name: &'static str,

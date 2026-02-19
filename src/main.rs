@@ -5,16 +5,9 @@
 #![no_std]
 #![no_main]
 
-mod consts;
 mod error;
 mod info;
 mod output;
-
-const HELP: &str = r"usage: efifetch [options]
-  options:
-    -h, --help  Print help
-    -l, --logo  Print info with uefi/vendor logo
-";
 
 use crate::{
     error::Result,
@@ -29,6 +22,12 @@ use uefi::{
     entry,
     proto::{console::text::Output, shell_params::ShellParameters},
 };
+
+const HELP: &str = r"usage: efifetch [options]
+  options:
+    -h, --help  Print help
+    -l, --logo  Print info with uefi/vendor logo
+";
 
 #[derive(Default)]
 struct Flags {
