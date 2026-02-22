@@ -22,6 +22,7 @@ const MEMORY_TYPES: &[MemoryType] = &[
     MemoryType::MMIO_PORT_SPACE,
 ];
 
+// TODO: fields: heapless::String + impl InfoItem trait
 #[derive(Clone, Copy)]
 pub struct Memory {
     pub total_memory: u32,
@@ -33,6 +34,7 @@ pub struct Memory {
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
+
         let total_memory = Memory::count_memory(&map, MEMORY_TYPES);
         let usable_memory = Memory::count_memory(&map, &[MEMORY_TYPES[0]]);
         let (phys_start, virt_start) = {

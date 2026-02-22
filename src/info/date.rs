@@ -1,42 +1,37 @@
-use crate::error::Result;
+use crate::{error::Result, info::InfoItem};
+use core::fmt::Write;
+use heapless::String;
 use uefi::runtime::get_time;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Date {
-    pub day: u8,
-    pub hour: u8,
-    pub minute: u8,
-    pub month: u8,
-    pub year: u16,
+    pub date: String<16>,
+    pub time: String<8>,
 }
 
 impl Date {
     pub fn new() -> Result<Self> {
         let time = get_time()?;
 
-        let hour = time.hour();
-        let minute = time.minute();
+        let date = {
+            let mut s = String::new();
+            write!(&mut s, "{}/{}/{}", time.day(), time.month(), time.year())?;
+            s
+        };
 
-        let day = time.day();
-        let month = time.month();
-        let year = time.year();
+        let time = {
+            let mut s = String::new();
+            write!(&mut s, "{}:{}", time.hour(), time.minute())?;
+            s
+        };
 
-        Ok(Self {
-            hour,
-            minute,
-            day,
-            month,
-            year,
-        })
+        Ok(Self { date, time })
     }
+}
 
-    pub fn time(&self) -> (u8, u8) {
-        // hh:mm
-        (self.hour, self.minute)
-    }
-
-    pub fn date(&self) -> (u8, u8, u16) {
-        // dd:mm:yyyy
-        (self.day, self.month, self.year)
+impl InfoItem for Date {
+    fn render(&self) -> impl Iterator<Item = (&str, &str)> {
+        [("Date:", self.date.as_str()), ("Time:", self.time.as_str())]
+            .into_iter()
     }
 }

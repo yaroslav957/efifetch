@@ -27,9 +27,12 @@ const HELP: &str = r"usage: efifetch [options]
   options:
     -h, --help  Print help
     -l, --logo  Print info with uefi/vendor logo
+  options(TODO):
+    -t=VALUE, --theme=VALUE
+    -p=VALUE, --page=VALUE
 ";
 
-#[derive(Default)]
+#[derive(Clone, Copy, Default)]
 struct Flags {
     help: bool,
     logo: bool,
@@ -45,23 +48,40 @@ fn main() -> Status {
 }
 
 fn run() -> Result<()> {
-    // Handles
+    // Handles: The ImageHandle (ih)
+    // represents the executable itself and is retrieved globally.
+    // The Output protocol handle (oh)
+    // must be explicitly looked up to find the specific
+    // device handle that supports the console output interface.
     let ih = image_handle();
     let oh = get_handle_for_protocol::<Output>()?;
 
-    // Protocols
+    // Protocols: exclusive mode to ensure we have direct control over
+    // the shell state, preventing other EFI drivers from interfering
+    // with our output or argument reading during execution.
     let params = open_protocol_exclusive::<ShellParameters>(ih)?;
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
-    //TODO:
+    // UEFI spec doesn't strictly define max argument lengths,
+    // this ~1KB stack allocation is a safe middle ground.
+    // Don't care about the hard limit here because any overflow
+    // is caught by Error::Capacity conversion
     let mut args: Vec<String<64>, 16> = Vec::new();
     let mut flags = Flags::default();
 
-    let info = Info::new()?;
-    let theme = Theme::RED;
-
     convert(params.args(), &mut args)?;
     parse(args, &mut flags)?;
+
+    // TODO:
+    // match flags.theme {
+    // Themes::Red => theme = Theme::RED,
+    // Themes::Green => theme = Theme::GREEN,
+    // ... => ...
+    // _ => theme = Theme::default(),
+    // };
+    //
+    let info = Info::new()?;
+    let theme = Theme::RED;
 
     if flags.help {
         writeln!(stdout, "{HELP}")?;
@@ -69,12 +89,15 @@ fn run() -> Result<()> {
         return Ok(());
     }
 
-    draw(&mut stdout, info, theme, flags.logo)?;
+    draw(&mut stdout, info, theme, flags)?;
 
     Ok(())
 }
 
-fn convert<'c, I>(args: I, vec: &mut Vec<String<64>, 16>) -> Result<()>
+fn convert<'c, I, const L: usize, const N: usize>(
+    args: I,
+    vec: &mut Vec<String<L>, N>,
+) -> Result<()>
 where
     I: Iterator<Item = &'c CStr16>,
 {
@@ -82,13 +105,16 @@ where
         let buf = arg.to_u16_slice();
         let string = String::from_utf16(buf)?;
 
-        _ = vec.push(string)
+        _ = vec.push(string);
     }
 
     Ok(())
 }
 
-fn parse(args: Vec<String<64>, 16>, flags: &mut Flags) -> Result<()> {
+fn parse<const L: usize, const N: usize>(
+    args: Vec<String<L>, N>,
+    flags: &mut Flags,
+) -> Result<()> {
     for arg in args.iter() {
         match arg.as_str() {
             "-h" | "--help" => flags.help = true,

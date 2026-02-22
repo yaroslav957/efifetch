@@ -8,7 +8,10 @@ use crate::{
     info::{date::Date, env::Env, firmware::Firmware, memory::Memory},
 };
 
-//TODO: impl debug for every field
+pub trait InfoItem {
+    fn render(&self) -> impl Iterator<Item = (&str, &str)>;
+}
+
 #[derive(Clone)]
 pub struct Info {
     pub date: Date,
@@ -20,7 +23,7 @@ pub struct Info {
 impl Info {
     pub fn new() -> Result<Self> {
         let date = Date::new()?;
-        let env = Env::new();
+        let env = Env::new()?;
         let firmware = Firmware::new()?;
         let memory = Memory::new()?;
 
