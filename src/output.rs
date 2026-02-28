@@ -4,8 +4,8 @@ pub mod theme;
 use crate::{
     Flags,
     error::Result,
-    info::{Info, InfoItem},
-    output::theme::Theme,
+    info::Info,
+    output::{page::Page, theme::Theme},
 };
 use core::{cmp::max, fmt::Write};
 use heapless::Vec;
@@ -14,7 +14,7 @@ use uefi::{
     proto::console::text::{Color, Output},
 };
 
-const LOGO_LINES: usize = 15;
+const LOGO_LINES: usize = 16;
 const INFO_START: usize = 1;
 
 pub fn draw(
@@ -25,20 +25,10 @@ pub fn draw(
 ) -> Result<()> {
     let mut rows: Vec<(&str, &str), 32> = Vec::new();
 
-    // TODO:
-    // use crate::output::page::Page;
-    //
-    // match flags.page {
-    //     Page::MAIN => rows = Page::main(),
-    //     Page::CPU => rows = Page::cpu(),
-    //     ... => ...,
-    //     _ => Page::default(),
-    // };
-    //
-    // TODO: move inside Page enum
-    add_to_rows(&mut rows, &info.date);
-    add_to_rows(&mut rows, &info.firmware);
-    add_to_rows(&mut rows, &info.env);
+    match flags.page {
+        Page::Main => Page::Main.add(&mut rows, &info)?,
+        Page::Env => Page::Env.add(&mut rows, &info)?,
+    }
 
     let mut logo = info.env.logo.lines();
     let total_lines = if flags.logo {
@@ -75,20 +65,7 @@ pub fn draw(
         writeln!(stdout, "")?;
     }
 
-    // Setting default UEFI-Shell color
-    // for CLI before exit draw fn
     stdout.set_color(Color::LightGray, Color::Black)?;
 
     Ok(())
-}
-
-fn add_to_rows<'r, T, const N: usize>(
-    rows: &mut Vec<(&'r str, &'r str), N>,
-    item: &'r T,
-) where
-    T: InfoItem,
-{
-    for row in item.render() {
-        _ = rows.push(row);
-    }
 }

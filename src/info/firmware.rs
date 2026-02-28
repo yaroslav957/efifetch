@@ -3,16 +3,11 @@ use core::fmt::Write;
 use heapless::String;
 use uefi::system::{firmware_revision, firmware_vendor, uefi_revision};
 
-// Based on UEFI max path (255 UTF-16 symbols),
-// 3x expansion factor for UTF-8 conversion from UCS-2,
-// 1 byte for null-terminator compatibility
-const SIZE: usize = 255 * 3 + 1;
-
 #[derive(Clone)]
 pub struct Firmware {
-    pub revision: String<10>,
-    pub vendor: String<SIZE>,
-    pub uefi_revision: String<10>,
+    pub revision: String<16>,
+    pub vendor: String<16>,
+    pub uefi_revision: String<16>,
 }
 
 impl Firmware {

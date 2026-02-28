@@ -12,13 +12,16 @@ mod output;
 use crate::{
     error::Result,
     info::Info,
-    output::{draw, theme::Theme},
+    output::{draw, page::Page, theme::Theme},
 };
 use core::fmt::Write;
-use heapless::{String, Vec};
+use heapless::{CapacityError, String, Vec};
 use uefi::{
     CStr16, Status,
-    boot::{get_handle_for_protocol, image_handle, open_protocol_exclusive},
+    boot::{
+        ScopedProtocol, get_handle_for_protocol, image_handle,
+        open_protocol_exclusive,
+    },
     entry,
     proto::{console::text::Output, shell_params::ShellParameters},
 };
@@ -28,15 +31,8 @@ const HELP: &str = r"usage: efifetch [options]
     -h, --help  Print help
     -l, --logo  Print info with uefi/vendor logo
   options(TODO):
-    -t=VALUE, --theme=VALUE
     -p=VALUE, --page=VALUE
 ";
-
-#[derive(Clone, Copy, Default)]
-struct Flags {
-    help: bool,
-    logo: bool,
-}
 
 #[entry]
 fn main() -> Status {
@@ -48,24 +44,12 @@ fn main() -> Status {
 }
 
 fn run() -> Result<()> {
-    // Handles: The ImageHandle (ih)
-    // represents the executable itself and is retrieved globally.
-    // The Output protocol handle (oh)
-    // must be explicitly looked up to find the specific
-    // device handle that supports the console output interface.
     let ih = image_handle();
     let oh = get_handle_for_protocol::<Output>()?;
 
-    // Protocols: exclusive mode to ensure we have direct control over
-    // the shell state, preventing other EFI drivers from interfering
-    // with our output or argument reading during execution.
     let params = open_protocol_exclusive::<ShellParameters>(ih)?;
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
-    // UEFI spec doesn't strictly define max argument lengths,
-    // this ~1KB stack allocation is a safe middle ground.
-    // Don't care about the hard limit here because any overflow
-    // is caught by Error::Capacity conversion
     let mut args: Vec<String<64>, 16> = Vec::new();
     let mut flags = Flags::default();
 
@@ -84,7 +68,8 @@ fn run() -> Result<()> {
     let theme = Theme::RED;
 
     if flags.help {
-        writeln!(stdout, "{HELP}")?;
+        flags.print_err(&mut stdout)?;
+        writeln!(&mut stdout, "{HELP}")?;
 
         return Ok(());
     }
@@ -103,9 +88,9 @@ where
 {
     for arg in args.skip(1) {
         let buf = arg.to_u16_slice();
-        let string = String::from_utf16(buf)?;
+        let s = String::from_utf16(buf)?;
 
-        _ = vec.push(string);
+        vec.push(s).map_err(|_| CapacityError::default())?;
     }
 
     Ok(())
@@ -116,12 +101,66 @@ fn parse<const L: usize, const N: usize>(
     flags: &mut Flags,
 ) -> Result<()> {
     for arg in args.iter() {
-        match arg.as_str() {
+        let arg = arg.as_str();
+
+        if let Some(val) = arg
+            .strip_prefix("-p=")
+            .or_else(|| arg.strip_prefix("--page="))
+        {
+            flags.page = match val {
+                "main" | "MAIN" => Page::Main,
+                "env" | "ENV" => Page::Env,
+                _ => {
+                    flags.help = true;
+                    flags.invalid_page = true;
+                    flags.page
+                }
+            };
+
+            continue;
+        }
+
+        match arg {
             "-h" | "--help" => flags.help = true,
             "-l" | "--logo" => flags.logo = true,
-            _ => flags.help = true,
+            _ => {
+                flags.help = true;
+                flags.invalid_flag = true
+            }
         }
     }
 
     Ok(())
+}
+
+#[derive(Clone, Copy, Default)]
+struct Flags {
+    pub help: bool,
+    pub invalid_flag: bool,
+    pub invalid_page: bool,
+    pub logo: bool,
+    pub page: Page,
+}
+
+impl Flags {
+    fn print_err(
+        &self,
+        stdout: &mut ScopedProtocol<Output>,
+    ) -> core::fmt::Result {
+        if self.invalid_flag {
+            writeln!(
+                stdout,
+                "Invalid flag or command. Help for a list of available flags:\n"
+            )?;
+        }
+
+        if self.invalid_page {
+            writeln!(
+                stdout,
+                "Invalid page value. Help for a list of available pages:\n"
+            )?;
+        }
+
+        Ok(())
+    }
 }
