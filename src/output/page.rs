@@ -30,11 +30,14 @@ impl Page {
         Ok(())
     }
 
-    fn add_item<'r, const N: usize>(
+    fn add_item<'r, T, const N: usize>(
         &self,
         rows: &mut Vec<(&'r str, &'r str), N>,
-        item: &'r impl InfoItem,
-    ) -> Result<()> {
+        item: &'r T,
+    ) -> Result<()>
+    where
+        T: InfoItem,
+    {
         for row in item.render() {
             rows.push(row).map_err(|_| CapacityError::default())?;
         }

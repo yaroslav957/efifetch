@@ -1,12 +1,7 @@
 pub mod page;
 pub mod theme;
 
-use crate::{
-    Flags,
-    error::Result,
-    info::Info,
-    output::{page::Page, theme::Theme},
-};
+use crate::{Flags, error::Result, info::Info, output::page::Page};
 use core::{cmp::max, fmt::Write};
 use heapless::Vec;
 use uefi::{
@@ -20,7 +15,6 @@ const INFO_START: usize = 1;
 pub fn draw(
     stdout: &mut ScopedProtocol<Output>,
     info: Info,
-    theme: Theme,
     flags: Flags,
 ) -> Result<()> {
     let mut rows: Vec<(&str, &str), 32> = Vec::new();
@@ -39,7 +33,10 @@ pub fn draw(
 
     for i in 0..total_lines {
         if flags.logo {
-            stdout.set_color(theme.logo.foreground, theme.logo.background)?;
+            stdout.set_color(
+                flags.theme.logo.foreground,
+                flags.theme.logo.background,
+            )?;
 
             if let Some(line) = logo.next() {
                 write!(stdout, "{line}")?;
@@ -54,11 +51,14 @@ pub fn draw(
         }
 
         if let Some((label, value)) = rows.get(i) {
-            stdout.set_color(theme.label.foreground, theme.label.background)?;
+            stdout.set_color(
+                flags.theme.label.foreground,
+                flags.theme.label.background,
+            )?;
             write!(stdout, "{label} ")?;
             stdout.set_color(
-                theme.content.foreground,
-                theme.content.background,
+                flags.theme.content.foreground,
+                flags.theme.content.background,
             )?;
             write!(stdout, "{value}")?;
         }

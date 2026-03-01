@@ -32,6 +32,7 @@ const HELP: &str = r"usage: efifetch [options]
     -l, --logo  Print info with uefi/vendor logo
   options(TODO):
     -p=VALUE, --page=VALUE
+    -t=VALUE, --theme=VALUE
 ";
 
 #[entry]
@@ -50,22 +51,12 @@ fn run() -> Result<()> {
     let params = open_protocol_exclusive::<ShellParameters>(ih)?;
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
-    let mut args: Vec<String<64>, 16> = Vec::new();
+    let info = Info::new()?;
+    let mut args: Vec<String<32>, 16> = Vec::new();
     let mut flags = Flags::default();
 
     convert(params.args(), &mut args)?;
     parse(args, &mut flags)?;
-
-    // TODO:
-    // match flags.theme {
-    // Themes::Red => theme = Theme::RED,
-    // Themes::Green => theme = Theme::GREEN,
-    // ... => ...
-    // _ => theme = Theme::default(),
-    // };
-    //
-    let info = Info::new()?;
-    let theme = Theme::RED;
 
     if flags.help {
         flags.print_err(&mut stdout)?;
@@ -74,7 +65,7 @@ fn run() -> Result<()> {
         return Ok(());
     }
 
-    draw(&mut stdout, info, theme, flags)?;
+    draw(&mut stdout, info, flags)?;
 
     Ok(())
 }
@@ -96,13 +87,12 @@ where
     Ok(())
 }
 
+/// Rewrite later with `Tenu` crate
 fn parse<const L: usize, const N: usize>(
     args: Vec<String<L>, N>,
     flags: &mut Flags,
 ) -> Result<()> {
-    for arg in args.iter() {
-        let arg = arg.as_str();
-
+    for arg in args.iter().map(|s| s.as_str()) {
         if let Some(val) = arg
             .strip_prefix("-p=")
             .or_else(|| arg.strip_prefix("--page="))
@@ -112,8 +102,25 @@ fn parse<const L: usize, const N: usize>(
                 "env" | "ENV" => Page::Env,
                 _ => {
                     flags.help = true;
-                    flags.invalid_page = true;
+                    flags.invalid_option = true;
                     flags.page
+                }
+            };
+
+            continue;
+        }
+
+        if let Some(val) = arg
+            .strip_prefix("-t=")
+            .or_else(|| arg.strip_prefix("--theme="))
+        {
+            flags.theme = match val {
+                "red" | "RED" => Theme::RED,
+                "green" | "GREEN" => Theme::GREEN,
+                _ => {
+                    flags.help = true;
+                    flags.invalid_option = true;
+                    flags.theme
                 }
             };
 
@@ -136,10 +143,11 @@ fn parse<const L: usize, const N: usize>(
 #[derive(Clone, Copy, Default)]
 struct Flags {
     pub help: bool,
-    pub invalid_flag: bool,
-    pub invalid_page: bool,
     pub logo: bool,
     pub page: Page,
+    pub theme: Theme,
+    pub invalid_flag: bool,
+    pub invalid_option: bool,
 }
 
 impl Flags {
@@ -154,10 +162,10 @@ impl Flags {
             )?;
         }
 
-        if self.invalid_page {
+        if self.invalid_option {
             writeln!(
                 stdout,
-                "Invalid page value. Help for a list of available pages:\n"
+                "Invalid option value. Help for a list of available options:\n"
             )?;
         }
 

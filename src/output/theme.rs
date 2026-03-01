@@ -17,12 +17,12 @@ impl Theme {
     pub const RED: Theme = Theme::new(
         Palette::new(Color::LightRed, Color::Black),
         Palette::new(Color::Red, Color::Black),
-        Palette::new(Color::LightRed, Color::Black),
+        Palette::new(Color::LightGray, Color::Black),
     );
     pub const GREEN: Theme = Theme::new(
         Palette::new(Color::LightGreen, Color::Black),
         Palette::new(Color::Green, Color::Black),
-        Palette::new(Color::LightGreen, Color::Black),
+        Palette::new(Color::LightGray, Color::Black),
     );
 
     pub const fn new(logo: Palette, label: Palette, content: Palette) -> Self {
@@ -31,6 +31,12 @@ impl Theme {
             label,
             content,
         }
+    }
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::RED
     }
 }
 
