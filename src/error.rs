@@ -1,14 +1,24 @@
-use core::{error, fmt, result};
+use core::{fmt, result};
 use heapless::{CapacityError, string::FromUtf16Error};
+use thiserror::Error;
 use uefi::Status;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum Error {
-    Fmt(fmt::Error),
-    Capacity(CapacityError),
-    Utf16(FromUtf16Error),
+    #[error("Stdout UEFI proto or fmt error: {0}")]
+    Fmt(#[from] fmt::Error),
+
+    #[error("Capactiy error of the existing buf: {0}")]
+    Capacity(#[from] CapacityError),
+
+    #[error("Invalid UTF16 sequence: {0}")]
+    Utf16(#[from] FromUtf16Error),
+
+    #[error("UEFI error: {0}")]
     Uefi(Status),
+
+    #[error("UEFI error: {0}, with data: {1}")]
     UefiData(Status, &'static str),
 }
 
@@ -19,52 +29,6 @@ impl Error {
             Error::UefiData(status, _) => *status,
             _ => Status::ABORTED,
         }
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::Fmt(e) => {
-                write!(f, "Stdout UEFI proto or fmt error: {e}")
-            }
-            Error::Capacity(e) => {
-                write!(f, "Capactiy error of the existing buf: {e}")
-            }
-            Error::Utf16(e) => write!(f, "Invalid UTF16 sequence: {e}"),
-            Error::Uefi(status) => write!(f, "UEFI error: {status}"),
-            Error::UefiData(status, data) => {
-                write!(f, "UEFI error: {status}, with data: {data}")
-            }
-        }
-    }
-}
-
-impl error::Error for Error {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self {
-            Error::Capacity(e) => Some(e),
-            Error::Fmt(e) => Some(e),
-            _ => None,
-        }
-    }
-}
-
-impl From<fmt::Error> for Error {
-    fn from(e: fmt::Error) -> Self {
-        Error::Fmt(e)
-    }
-}
-
-impl From<CapacityError> for Error {
-    fn from(e: CapacityError) -> Self {
-        Error::Capacity(e)
-    }
-}
-
-impl From<FromUtf16Error> for Error {
-    fn from(e: FromUtf16Error) -> Self {
-        Error::Utf16(e)
     }
 }
 

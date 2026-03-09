@@ -4,6 +4,7 @@ use crate::{
 };
 use heapless::{CapacityError, Vec};
 
+//TODO: memory page
 #[derive(Clone, Copy, Default)]
 pub enum Page {
     #[default]
@@ -21,6 +22,7 @@ impl Page {
             Self::Main => {
                 self.add_item(rows, &info.date)?;
                 self.add_item(rows, &info.firmware)?;
+                self.add_item(rows, &info.memory)?;
             }
             Self::Env => {
                 self.add_item(rows, &info.env)?;

@@ -22,6 +22,10 @@ panic = "abort"
 [dependencies.heapless]
 version = "=0.9.2"
 
+[dependencies.thiserror]
+version = "=2.0.18"
+default-features = false
+
 [dependencies.uefi]
 version = "=0.36.1"
-features = ["panic_handler", "global_allocator"]
+features = ["panic_handler"]
