@@ -37,9 +37,9 @@ impl Firmware {
 impl InfoItem for Firmware {
     fn render(&self) -> impl Iterator<Item = (&str, &str)> {
         [
-            ("Rebision:", self.revision.as_str()),
+            ("Revision:", self.revision.as_str()),
             ("Vendor:", self.vendor.as_str()),
-            ("Uefi revision:", self.uefi_revision.as_str()),
+            ("UEFI revision:", self.uefi_revision.as_str()),
         ]
         .into_iter()
     }

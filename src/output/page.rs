@@ -4,12 +4,13 @@ use crate::{
 };
 use heapless::{CapacityError, Vec};
 
-//TODO: memory page
 #[derive(Clone, Copy, Default)]
 pub enum Page {
     #[default]
     Main,
     Env,
+    Firmware,
+    Memory,
 }
 
 impl Page {
@@ -20,27 +21,36 @@ impl Page {
     ) -> Result<()> {
         match self {
             Self::Main => {
-                self.add_item(rows, &info.date)?;
-                self.add_item(rows, &info.firmware)?;
-                self.add_item(rows, &info.memory)?;
+                Self::filter(rows, &info.date, |_| true)?;
+
+                let allowed = ["Vendor:", "UEFI revision:"];
+                Self::filter(rows, &info.firmware, |(label, _)| {
+                    allowed.contains(label)
+                })?;
+
+                let allowed = ["Memory:"];
+                Self::filter(rows, &info.memory, |(label, _)| {
+                    allowed.contains(label)
+                })?;
             }
-            Self::Env => {
-                self.add_item(rows, &info.env)?;
-            }
+            Self::Env => Self::filter(rows, &info.env, |_| true)?,
+            Self::Firmware => Self::filter(rows, &info.firmware, |_| true)?,
+            Self::Memory => Self::filter(rows, &info.memory, |_| true)?,
         }
 
         Ok(())
     }
 
-    fn add_item<'r, T, const N: usize>(
-        &self,
+    fn filter<'r, T, const N: usize, F>(
         rows: &mut Vec<(&'r str, &'r str), N>,
         item: &'r T,
+        filter: F,
     ) -> Result<()>
     where
         T: InfoItem,
+        F: FnMut(&(&'r str, &'r str)) -> bool,
     {
-        for row in item.render() {
+        for row in item.render().filter(filter) {
             rows.push(row).map_err(|_| CapacityError::default())?;
         }
 

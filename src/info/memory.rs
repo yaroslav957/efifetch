@@ -14,8 +14,7 @@ const MB: u64 = 1024 * 1024;
 #[derive(Clone)]
 #[non_exhaustive]
 pub struct Memory {
-    pub total_memory: String<16>,
-    pub usable_memory: String<16>,
+    pub memory: String<32>,
     pub physical_start: String<16>,
     pub virtual_start: String<16>,
 }
@@ -25,14 +24,12 @@ impl Memory {
         let map = memory_map(MemoryType::LOADER_DATA)?;
         let (total, usable, phys, virt) = Self::process_map(&map)?;
 
-        let total_memory = String::build(format_args!("{total} MiB"))?;
-        let usable_memory = String::build(format_args!("{usable} MiB"))?;
+        let memory = String::build(format_args!("{usable} / {total} MiB"))?;
         let physical_start = String::build(format_args!("{phys:#x}"))?;
         let virtual_start = String::build(format_args!("{virt:#x}"))?;
 
         Ok(Self {
-            total_memory,
-            usable_memory,
+            memory,
             physical_start,
             virtual_start,
         })
@@ -59,12 +56,13 @@ impl Memory {
             }
         }
 
+        let used = total - usable;
         let (phys, virt) = start_ptrs.ok_or(Error::new(
             Status::NOT_FOUND,
             "No pointers found from memmap",
         ))?;
 
-        Ok((total / MB, usable / MB, phys, virt))
+        Ok((total / MB, used / MB, phys, virt))
     }
 
     const fn is_total(ty: MemoryType) -> bool {
@@ -90,8 +88,7 @@ impl Memory {
 impl InfoItem for Memory {
     fn render(&self) -> impl Iterator<Item = (&str, &str)> {
         [
-            ("Total memory:", self.total_memory.as_str()),
-            ("Usable memory:", self.usable_memory.as_str()),
+            ("Memory:", self.memory.as_str()),
             ("Physical start:", self.physical_start.as_str()),
             ("Virtual start:", self.virtual_start.as_str()),
         ]

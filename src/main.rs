@@ -29,7 +29,7 @@ use uefi::{
 const HELP: &str = r"usage: efifetch [options]
   options:
     -h, --help  Print help
-    -l, --logo  Print info with uefi/vendor logo
+    -l, --logo  Print info with uefi logo
   options(TODO):
     -p=VALUE, --page=VALUE
     -t=VALUE, --theme=VALUE
@@ -87,7 +87,7 @@ where
     Ok(())
 }
 
-/// Rewrite later with `Tenu` crate
+/// Rewrite later with `Tenu` crate & delete this block
 fn parse<const L: usize, const N: usize>(
     args: Vec<String<L>, N>,
     flags: &mut Flags,
@@ -100,6 +100,8 @@ fn parse<const L: usize, const N: usize>(
             flags.page = match val {
                 "main" | "MAIN" => Page::Main,
                 "env" | "ENV" => Page::Env,
+                "firm" | "FIRM" => Page::Firmware,
+                "mem" | "MME" => Page::Memory,
                 _ => {
                     flags.help = true;
                     flags.invalid_option = true;
@@ -158,14 +160,14 @@ impl Flags {
         if self.invalid_flag {
             writeln!(
                 stdout,
-                "Invalid flag or command. Help for a list of available flags:\n"
+                "Invalid flag or command. List of available flags:\n"
             )?;
         }
 
         if self.invalid_option {
             writeln!(
                 stdout,
-                "Invalid option value. Help for a list of available options:\n"
+                "Invalid option value. List of available options:\n"
             )?;
         }
 

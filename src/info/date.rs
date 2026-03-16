@@ -16,13 +16,13 @@ impl Date {
         let time = get_time()?;
 
         let date = String::build(format_args!(
-            "{}/{}/{}",
+            "{:02}/{:02}/{}",
             time.day(),
             time.month(),
             time.year()
         ))?;
         let time = String::build(format_args!(
-            "{}:{} (UTC)",
+            "{:02}:{:02} (UTC)",
             time.hour(),
             time.minute()
         ))?;

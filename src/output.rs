@@ -22,6 +22,8 @@ pub fn draw(
     match flags.page {
         Page::Main => Page::Main.add(&mut rows, &info)?,
         Page::Env => Page::Env.add(&mut rows, &info)?,
+        Page::Firmware => Page::Firmware.add(&mut rows, &info)?,
+        Page::Memory => Page::Memory.add(&mut rows, &info)?,
     }
 
     let mut logo = info.env.logo.lines();
