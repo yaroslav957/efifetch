@@ -1,82 +1,174 @@
+//! TODO: Rewrite Shell args parsing with my own tiny cli-args parser lib,
+//! called `Tenu` (https://github.com/yaroslav957/tenu).
+//! The crate has no dependencies on alloc and none are planned.
+
 #![no_std]
 #![no_main]
 
-mod consts;
-mod display;
+mod error;
 mod info;
+mod output;
 
 use crate::{
-    consts::{KEY_A, KEY_E, KEY_M},
-    display::{Display, page::Page},
+    error::Result,
     info::Info,
+    output::{draw, page::Page, theme::Theme},
 };
-use core::time::Duration;
+use core::fmt::Write;
+use heapless::{CapacityError, String, Vec};
 use uefi::{
-    Error, Result, ResultExt, Status,
+    CStr16, Status,
     boot::{
-        ScopedProtocol, get_handle_for_protocol, open_protocol_exclusive, stall, wait_for_event,
+        ScopedProtocol, get_handle_for_protocol, image_handle,
+        open_protocol_exclusive,
     },
-    entry, helpers,
-    proto::console::text::{
-        Input,
-        Key::{Printable, Special},
-        Output, ScanCode,
-    },
+    entry,
+    proto::{console::text::Output, shell_params::ShellParameters},
 };
 
-pub type In = ScopedProtocol<Input>;
-pub type Out = ScopedProtocol<Output>;
+const HELP: &str = r"usage: efifetch [options]
+  options:
+    -h, --help  Print help
+    -l, --logo  Print info with uefi/vendor logo
+  options(TODO):
+    -p=VALUE, --page=VALUE
+    -t=VALUE, --theme=VALUE
+";
 
 #[entry]
-pub fn main() -> Status {
-    helpers::init().unwrap();
-
-    let out_handle = get_handle_for_protocol::<Output>().unwrap();
-    let mut out = open_protocol_exclusive(out_handle).unwrap();
-
-    let inp_handle = get_handle_for_protocol::<Input>().unwrap();
-    let mut inp = open_protocol_exclusive(inp_handle).unwrap();
-
-    event_handler(&mut inp, &mut out).unwrap();
-    stall(Duration::from_secs(1));
+fn main() -> Status {
+    if let Err(e) = run() {
+        return e.status();
+    };
 
     Status::SUCCESS
 }
 
-pub fn event_handler(inp: &mut In, out: &mut Out) -> Result<()> {
+fn run() -> Result<()> {
+    let ih = image_handle();
+    let oh = get_handle_for_protocol::<Output>()?;
+
+    let params = open_protocol_exclusive::<ShellParameters>(ih)?;
+    let mut stdout = open_protocol_exclusive::<Output>(oh)?;
+
     let info = Info::new()?;
-    let mut display = Display::new(out)?;
+    let mut args: Vec<String<32>, 16> = Vec::new();
+    let mut flags = Flags::default();
 
-    display.draw_topbar(out);
-    display.main_page(out);
+    convert(params.args(), &mut args)?;
+    parse(args, &mut flags)?;
 
-    loop {
-        let mut events = [inp
-            .wait_for_key_event()
-            .ok_or(Error::new(Status::UNSUPPORTED, ()))?];
-        wait_for_event(&mut events).discard_errdata()?;
+    if flags.help {
+        flags.print_err(&mut stdout)?;
+        writeln!(&mut stdout, "{HELP}")?;
 
-        if let Some(key) = inp.read_key()? {
-            match key {
-                Printable(KEY_M) => display.main_page(out),
-                Printable(KEY_A) => display.about_page(out),
-                Printable(KEY_E) => break,
+        return Ok(());
+    }
 
-                Special(ScanCode::DOWN) => {
-                    if display.page == Page::Main {
-                        display.next_category(out)
-                    }
+    draw(&mut stdout, info, flags)?;
+
+    Ok(())
+}
+
+fn convert<'c, I, const L: usize, const N: usize>(
+    args: I,
+    vec: &mut Vec<String<L>, N>,
+) -> Result<()>
+where
+    I: Iterator<Item = &'c CStr16>,
+{
+    for arg in args.skip(1) {
+        let buf = arg.to_u16_slice();
+        let s = String::from_utf16(buf)?;
+
+        vec.push(s).map_err(|_| CapacityError::default())?;
+    }
+
+    Ok(())
+}
+
+/// Rewrite later with `Tenu` crate
+fn parse<const L: usize, const N: usize>(
+    args: Vec<String<L>, N>,
+    flags: &mut Flags,
+) -> Result<()> {
+    for arg in args.iter().map(|s| s.as_str()) {
+        if let Some(val) = arg
+            .strip_prefix("-p=")
+            .or_else(|| arg.strip_prefix("--page="))
+        {
+            flags.page = match val {
+                "main" | "MAIN" => Page::Main,
+                "env" | "ENV" => Page::Env,
+                _ => {
+                    flags.help = true;
+                    flags.invalid_option = true;
+                    flags.page
                 }
+            };
 
-                Special(ScanCode::UP) => {
-                    if display.page == Page::Main {
-                        display.prev_category(out)
-                    }
+            continue;
+        }
+
+        if let Some(val) = arg
+            .strip_prefix("-t=")
+            .or_else(|| arg.strip_prefix("--theme="))
+        {
+            flags.theme = match val {
+                "red" | "RED" => Theme::RED,
+                "green" | "GREEN" => Theme::GREEN,
+                _ => {
+                    flags.help = true;
+                    flags.invalid_option = true;
+                    flags.theme
                 }
-                _ => (),
+            };
+
+            continue;
+        }
+
+        match arg {
+            "-h" | "--help" => flags.help = true,
+            "-l" | "--logo" => flags.logo = true,
+            _ => {
+                flags.help = true;
+                flags.invalid_flag = true
             }
         }
     }
 
     Ok(())
+}
+
+#[derive(Clone, Copy, Default)]
+struct Flags {
+    pub help: bool,
+    pub logo: bool,
+    pub page: Page,
+    pub theme: Theme,
+    pub invalid_flag: bool,
+    pub invalid_option: bool,
+}
+
+impl Flags {
+    fn print_err(
+        &self,
+        stdout: &mut ScopedProtocol<Output>,
+    ) -> core::fmt::Result {
+        if self.invalid_flag {
+            writeln!(
+                stdout,
+                "Invalid flag or command. Help for a list of available flags:\n"
+            )?;
+        }
+
+        if self.invalid_option {
+            writeln!(
+                stdout,
+                "Invalid option value. Help for a list of available options:\n"
+            )?;
+        }
+
+        Ok(())
+    }
 }

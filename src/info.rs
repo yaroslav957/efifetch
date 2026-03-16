@@ -1,12 +1,35 @@
 mod date;
+mod env;
 mod firmware;
 mod memory;
 
-use crate::info::{date::Date, firmware::Firmware, memory::Memory};
-use uefi::Result;
+use crate::{
+    error::Result,
+    info::{date::Date, env::Env, firmware::Firmware, memory::Memory},
+};
+use core::fmt::{self, Write};
+use heapless::String;
 
+pub trait InfoItem {
+    fn render(&self) -> impl Iterator<Item = (&str, &str)>;
+}
+
+trait FromArgs<const N: usize> {
+    fn build(args: fmt::Arguments) -> Result<String<N>>;
+}
+
+impl<const N: usize> FromArgs<N> for String<N> {
+    fn build(args: fmt::Arguments) -> Result<Self> {
+        let mut s = String::new();
+        s.write_fmt(args)?;
+        Ok(s)
+    }
+}
+
+#[derive(Clone)]
 pub struct Info {
     pub date: Date,
+    pub env: Env,
     pub firmware: Firmware,
     pub memory: Memory,
 }
@@ -14,56 +37,15 @@ pub struct Info {
 impl Info {
     pub fn new() -> Result<Self> {
         let date = Date::new()?;
-        let firmware = Firmware::new();
+        let env = Env::new()?;
+        let firmware = Firmware::new()?;
         let memory = Memory::new()?;
 
         Ok(Self {
             date,
+            env,
             firmware,
             memory,
         })
-    }
-}
-
-pub struct U32Buffer {
-    pub buf: [u8; 10],
-    pub len: usize,
-}
-
-impl U32Buffer {
-    pub fn new(num: u32) -> Self {
-        let mut buf = [0u8; 10];
-        let len = U32Buffer::format(num, &mut buf);
-        Self { buf, len }
-    }
-
-    pub fn as_str(&self) -> &str {
-        unsafe { str::from_utf8_unchecked(&self.buf[..self.len]) }
-    }
-
-    fn format(mut num: u32, buf: &mut [u8; 10]) -> usize {
-        let mut pos = 10;
-        let mut len = 10;
-
-        if num == 0 {
-            buf[0] = b'0';
-            return 1;
-        }
-
-        while num > 0 {
-            pos -= 1;
-            buf[pos] = b'0' + (num % 10) as u8;
-            num /= 10;
-        }
-
-        len = len - pos;
-
-        if pos > 0 {
-            for i in 0..len {
-                buf[i] = buf[pos + i];
-            }
-        }
-
-        len
     }
 }

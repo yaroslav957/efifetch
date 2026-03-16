@@ -1,33 +1,46 @@
-use crate::{consts::EDK_VENDOR, info::U32Buffer};
-use uefi::{
-    CStr16,
-    system::{firmware_revision, firmware_vendor, uefi_revision},
+use crate::{
+    error::Result,
+    info::{FromArgs, InfoItem},
 };
+use heapless::String;
+use uefi::system::{firmware_revision, firmware_vendor, uefi_revision};
 
-#[allow(dead_code)]
+#[derive(Clone)]
+#[non_exhaustive]
 pub struct Firmware {
-    pub revision: U32Buffer,
-    pub vendor: &'static str,
-    pub uefi_revision: U32Buffer,
+    pub revision: String<16>,
+    pub vendor: String<16>,
+    pub uefi_revision: String<16>,
 }
 
 impl Firmware {
-    pub fn new() -> Self {
-        let revision = U32Buffer::new(firmware_revision());
-        let vendor = Firmware::vendor(firmware_vendor());
-        let uefi_revision = U32Buffer::new(uefi_revision().0);
+    pub fn new() -> Result<Self> {
+        let revision = String::build(format_args!("{}", firmware_revision()))?;
+        let vendor = {
+            let buf = firmware_vendor().to_u16_slice();
+            String::from_utf16(buf)?
+        };
+        let uefi_revision = String::build(format_args!(
+            "{}.{}",
+            uefi_revision().major(),
+            uefi_revision().minor()
+        ))?;
 
-        Self {
+        Ok(Self {
             revision,
             vendor,
             uefi_revision,
-        }
+        })
     }
+}
 
-    fn vendor(cstr: &'static CStr16) -> &'static str {
-        match cstr.as_bytes() {
-            EDK_VENDOR => "EDK II",
-            _ => "Unknown",
-        }
+impl InfoItem for Firmware {
+    fn render(&self) -> impl Iterator<Item = (&str, &str)> {
+        [
+            ("Rebision:", self.revision.as_str()),
+            ("Vendor:", self.vendor.as_str()),
+            ("Uefi revision:", self.uefi_revision.as_str()),
+        ]
+        .into_iter()
     }
 }

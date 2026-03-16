@@ -1,31 +1,39 @@
-use crate::info::U32Buffer;
-use uefi::{Result, runtime::get_time};
+use crate::{
+    error::Result,
+    info::{FromArgs, InfoItem},
+};
+use heapless::String;
+use uefi::runtime::get_time;
 
+#[derive(Clone)]
 pub struct Date {
-    pub hour: U32Buffer,
-    pub minute: U32Buffer,
-    pub day: U32Buffer,
-    pub month: U32Buffer,
-    pub year: U32Buffer,
+    pub date: String<16>,
+    pub time: String<16>,
 }
 
 impl Date {
     pub fn new() -> Result<Self> {
         let time = get_time()?;
 
-        let day = U32Buffer::new(time.day() as u32);
-        let month = U32Buffer::new(time.month() as u32);
-        let year = U32Buffer::new(time.year() as u32);
+        let date = String::build(format_args!(
+            "{}/{}/{}",
+            time.day(),
+            time.month(),
+            time.year()
+        ))?;
+        let time = String::build(format_args!(
+            "{}:{} (UTC)",
+            time.hour(),
+            time.minute()
+        ))?;
 
-        let hour = U32Buffer::new(time.hour() as u32);
-        let minute = U32Buffer::new(time.minute() as u32);
+        Ok(Self { date, time })
+    }
+}
 
-        Ok(Self {
-            hour,
-            minute,
-            day,
-            month,
-            year,
-        })
+impl InfoItem for Date {
+    fn render(&self) -> impl Iterator<Item = (&str, &str)> {
+        [("Date:", self.date.as_str()), ("Time:", self.time.as_str())]
+            .into_iter()
     }
 }
