@@ -27,12 +27,15 @@ use uefi::{
 };
 
 const HELP: &str = r"usage: efifetch [options]
-  options:
-    -h, --help  Print help
-    -l, --logo  Print info with uefi logo
-  options(TODO):
-    -p=VALUE, --page=VALUE
-    -t=VALUE, --theme=VALUE
+    flags:
+        -h/--help: Print help
+        -l/--logo: Print info with logo
+        -v/--version: Print version
+    options:
+        -p/--page=VALUE,
+            VELUE=[main, env, firm, mem]
+        -t/--page=VALUE,
+            VALUE=[red, green]
 ";
 
 #[entry]
@@ -61,6 +64,14 @@ fn run() -> Result<()> {
     if flags.help {
         flags.print_err(&mut stdout)?;
         writeln!(&mut stdout, "{HELP}")?;
+
+        return Ok(());
+    } else if flags.version {
+        writeln!(
+            &mut stdout,
+            "{} version: {}",
+            &info.env.name, &info.env.version
+        )?;
 
         return Ok(());
     }
@@ -131,6 +142,7 @@ fn parse<const L: usize, const N: usize>(
 
         match arg {
             "-h" | "--help" => flags.help = true,
+            "-v" | "--version" => flags.version = true,
             "-l" | "--logo" => flags.logo = true,
             _ => {
                 flags.help = true;
@@ -145,6 +157,7 @@ fn parse<const L: usize, const N: usize>(
 #[derive(Clone, Copy, Default)]
 struct Flags {
     pub help: bool,
+    pub version: bool,
     pub logo: bool,
     pub page: Page,
     pub theme: Theme,
