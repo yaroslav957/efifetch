@@ -1,21 +1,20 @@
 //! TODO: Rewrite Shell args parsing with my own tiny cli-args parser lib,
 //! called `Tenu` (https://github.com/yaroslav957/tenu).
-//! The crate has no dependencies on alloc and none are planned.
 
 #![no_std]
 #![no_main]
 
-mod error;
-mod info;
-mod output;
+extern crate alloc;
 
 use crate::{
     error::Result,
     info::Info,
     output::{draw, page::Page, theme::Theme},
 };
-use core::fmt::Write;
-use heapless::{CapacityError, String, Vec};
+
+use alloc::{string::String, vec::Vec};
+use core::fmt::{self, Write};
+
 use uefi::{
     CStr16, Status,
     boot::{
@@ -23,20 +22,37 @@ use uefi::{
         open_protocol_exclusive,
     },
     entry,
+    helpers::init,
     proto::{console::text::Output, shell_params::ShellParameters},
 };
 
-const HELP: &str = r"usage: efifetch [options]
-    flags:
-        -h/--help: Print help
-        -l/--logo: Print info with logo
-        -v/--version: Print version
-    options:
-        -p/--page=VALUE,
-            VELUE=[main, env, firm, mem]
-        -t/--page=VALUE,
-            VALUE=[red, green]
-";
+mod error;
+mod info;
+mod output;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const TIMESTAMP: &str = env!("VERGEN_BUILD_TIMESTAMP");
+const RUSTC: &str = env!("VERGEN_RUSTC_SEMVER");
+
+const HELP: &str = concat!(
+    "Usage: efifetch [OPTION]...\n",
+    "A simple system information tool for EFI environments.\n",
+    "\n",
+    "Options:\n",
+    "  -h, --help           display this help and exit\n",
+    "  -v, --version        output version information and exit\n",
+    "  -l, --logo           print system information alongside the logo\n",
+    "  -p, --page=PAGE      specify the information page to display\n",
+    "                         (main, firm, mem)\n",
+    "  -t, --theme=COLOR    set the output color theme\n",
+    "                         (red, green)\n",
+    "\n",
+    "Examples:\n",
+    "  efifetch -l -p=mem   Show memory info with a logo\n",
+    "  efifetch --theme=red Set theme to red\n",
+    "\n",
+    "Report bugs to <https://github.com/yaroslav957/efifetch>"
+);
 
 #[entry]
 fn main() -> Status {
@@ -48,6 +64,8 @@ fn main() -> Status {
 }
 
 fn run() -> Result<()> {
+    init()?;
+
     let ih = image_handle();
     let oh = get_handle_for_protocol::<Output>()?;
 
@@ -55,11 +73,10 @@ fn run() -> Result<()> {
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
     let info = Info::new()?;
-    let mut args: Vec<String<32>, 16> = Vec::new();
+    let args = convert(params.args())?;
     let mut flags = Flags::default();
 
-    convert(params.args(), &mut args)?;
-    parse(args, &mut flags)?;
+    parse(&args, &mut flags)?;
 
     if flags.help {
         flags.print_err(&mut stdout)?;
@@ -67,11 +84,8 @@ fn run() -> Result<()> {
 
         return Ok(());
     } else if flags.version {
-        writeln!(
-            &mut stdout,
-            "{} version: {}",
-            &info.env.name, &info.env.version
-        )?;
+        writeln!(&mut stdout, "Version: {VERSION} builded on Rust {RUSTC}")?;
+        writeln!(&mut stdout, "Time: {TIMESTAMP}")?;
 
         return Ok(());
     }
@@ -81,38 +95,35 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn convert<'c, I, const L: usize, const N: usize>(
-    args: I,
-    vec: &mut Vec<String<L>, N>,
-) -> Result<()>
+fn convert<'a, I>(args: I) -> Result<Vec<String>>
 where
-    I: Iterator<Item = &'c CStr16>,
+    I: Iterator<Item = &'a CStr16>,
 {
-    for arg in args.skip(1) {
-        let buf = arg.to_u16_slice();
-        let s = String::from_utf16(buf)?;
+    args.skip(1)
+        .map(|arg| {
+            let buf = arg.to_u16_slice();
+            let s = String::from_utf16(buf)?;
 
-        vec.push(s).map_err(|_| CapacityError::default())?;
-    }
-
-    Ok(())
+            Ok(s)
+        })
+        .collect()
 }
 
-/// Rewrite later with `Tenu` crate & delete this block
-fn parse<const L: usize, const N: usize>(
-    args: Vec<String<L>, N>,
-    flags: &mut Flags,
-) -> Result<()> {
-    for arg in args.iter().map(|s| s.as_str()) {
+/// REWRITE & DELETE
+/// REWRITE & DELETE
+/// REWRITE & DELETE
+fn parse(args: &[String], flags: &mut Flags) -> Result<()> {
+    for arg in args {
+        let arg = arg.as_str();
+
         if let Some(val) = arg
             .strip_prefix("-p=")
             .or_else(|| arg.strip_prefix("--page="))
         {
             flags.page = match val {
                 "main" | "MAIN" => Page::Main,
-                "env" | "ENV" => Page::Env,
                 "firm" | "FIRM" => Page::Firmware,
-                "mem" | "MME" => Page::Memory,
+                "mem" | "MEM" => Page::Memory,
                 _ => {
                     flags.help = true;
                     flags.invalid_option = true;
@@ -146,7 +157,7 @@ fn parse<const L: usize, const N: usize>(
             "-l" | "--logo" => flags.logo = true,
             _ => {
                 flags.help = true;
-                flags.invalid_flag = true
+                flags.invalid_flag = true;
             }
         }
     }
@@ -166,10 +177,7 @@ struct Flags {
 }
 
 impl Flags {
-    fn print_err(
-        &self,
-        stdout: &mut ScopedProtocol<Output>,
-    ) -> core::fmt::Result {
+    fn print_err(&self, stdout: &mut ScopedProtocol<Output>) -> fmt::Result {
         if self.invalid_flag {
             writeln!(
                 stdout,

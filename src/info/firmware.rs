@@ -2,15 +2,17 @@ use crate::{
     error::Result,
     info::{FromArgs, InfoItem},
 };
-use heapless::String;
+
+use alloc::string::String;
+
 use uefi::system::{firmware_revision, firmware_vendor, uefi_revision};
 
 #[derive(Clone)]
 #[non_exhaustive]
 pub struct Firmware {
-    pub revision: String<16>,
-    pub vendor: String<16>,
-    pub uefi_revision: String<16>,
+    pub revision: String,
+    pub vendor: String,
+    pub uefi_revision: String,
 }
 
 impl Firmware {

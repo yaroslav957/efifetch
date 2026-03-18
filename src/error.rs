@@ -1,5 +1,6 @@
+use alloc::string::FromUtf16Error;
 use core::{fmt, result};
-use heapless::{CapacityError, string::FromUtf16Error};
+
 use thiserror::Error;
 use uefi::Status;
 
@@ -8,9 +9,6 @@ use uefi::Status;
 pub enum Error {
     #[error("Stdout UEFI proto or fmt error: {0}")]
     Fmt(#[from] fmt::Error),
-
-    #[error("Capactiy error of the existing buf: {0}")]
-    Capacity(#[from] CapacityError),
 
     #[error("Invalid UTF16 sequence: {0}")]
     Utf16(#[from] FromUtf16Error),

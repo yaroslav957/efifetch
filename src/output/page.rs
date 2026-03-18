@@ -2,21 +2,21 @@ use crate::{
     error::Result,
     info::{Info, InfoItem},
 };
-use heapless::{CapacityError, Vec};
+
+use alloc::vec::Vec;
 
 #[derive(Clone, Copy, Default)]
 pub enum Page {
     #[default]
     Main,
-    Env,
     Firmware,
     Memory,
 }
 
 impl Page {
-    pub fn add<'r, const N: usize>(
+    pub fn add<'r>(
         &self,
-        rows: &mut Vec<(&'r str, &'r str), N>,
+        rows: &mut Vec<(&'r str, &'r str)>,
         info: &'r Info,
     ) -> Result<()> {
         match self {
@@ -33,7 +33,6 @@ impl Page {
                     allowed.contains(label)
                 })?;
             }
-            Self::Env => Self::filter(rows, &info.env, |_| true)?,
             Self::Firmware => Self::filter(rows, &info.firmware, |_| true)?,
             Self::Memory => Self::filter(rows, &info.memory, |_| true)?,
         }
@@ -41,8 +40,8 @@ impl Page {
         Ok(())
     }
 
-    fn filter<'r, T, const N: usize, F>(
-        rows: &mut Vec<(&'r str, &'r str), N>,
+    fn filter<'r, T, F>(
+        rows: &mut Vec<(&'r str, &'r str)>,
         item: &'r T,
         filter: F,
     ) -> Result<()>
@@ -51,7 +50,7 @@ impl Page {
         F: FnMut(&(&'r str, &'r str)) -> bool,
     {
         for row in item.render().filter(filter) {
-            rows.push(row).map_err(|_| CapacityError::default())?;
+            rows.push(row);
         }
 
         Ok(())

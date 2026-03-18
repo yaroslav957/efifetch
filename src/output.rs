@@ -1,32 +1,34 @@
-pub mod page;
-pub mod theme;
-
 use crate::{Flags, error::Result, info::Info, output::page::Page};
+
+use alloc::vec::Vec;
 use core::{cmp::max, fmt::Write};
-use heapless::Vec;
+
 use uefi::{
     boot::ScopedProtocol,
     proto::console::text::{Color, Output},
 };
 
+pub mod page;
+pub mod theme;
+
 const LOGO_LINES: usize = 16;
 const INFO_START: usize = 1;
+const LOGO: &str = include_str!("./../assets/uefi.logo");
 
 pub fn draw(
     stdout: &mut ScopedProtocol<Output>,
     info: Info,
     flags: Flags,
 ) -> Result<()> {
-    let mut rows: Vec<(&str, &str), 32> = Vec::new();
+    let mut rows: Vec<(&str, &str)> = Vec::new();
 
     match flags.page {
         Page::Main => Page::Main.add(&mut rows, &info)?,
-        Page::Env => Page::Env.add(&mut rows, &info)?,
         Page::Firmware => Page::Firmware.add(&mut rows, &info)?,
         Page::Memory => Page::Memory.add(&mut rows, &info)?,
     }
 
-    let mut logo = info.env.logo.lines();
+    let mut logo = LOGO.lines();
     let total_lines = if flags.logo {
         max(LOGO_LINES, rows.len())
     } else {

@@ -1,27 +1,28 @@
-mod date;
-mod env;
-mod firmware;
-mod memory;
-
 use crate::{
     error::Result,
-    info::{date::Date, env::Env, firmware::Firmware, memory::Memory},
+    info::{date::Date, firmware::Firmware, memory::Memory},
 };
+
+use alloc::string::String;
 use core::fmt::{self, Write};
-use heapless::String;
+
+mod date;
+mod firmware;
+mod memory;
 
 pub trait InfoItem {
     fn render(&self) -> impl Iterator<Item = (&str, &str)>;
 }
 
-trait FromArgs<const N: usize> {
-    fn build(args: fmt::Arguments) -> Result<String<N>>;
+trait FromArgs {
+    fn build(args: fmt::Arguments) -> Result<String>;
 }
 
-impl<const N: usize> FromArgs<N> for String<N> {
+impl FromArgs for String {
     fn build(args: fmt::Arguments) -> Result<Self> {
         let mut s = String::new();
         s.write_fmt(args)?;
+
         Ok(s)
     }
 }
@@ -29,7 +30,6 @@ impl<const N: usize> FromArgs<N> for String<N> {
 #[derive(Clone)]
 pub struct Info {
     pub date: Date,
-    pub env: Env,
     pub firmware: Firmware,
     pub memory: Memory,
 }
@@ -37,13 +37,11 @@ pub struct Info {
 impl Info {
     pub fn new() -> Result<Self> {
         let date = Date::new()?;
-        let env = Env::new()?;
         let firmware = Firmware::new()?;
         let memory = Memory::new()?;
 
         Ok(Self {
             date,
-            env,
             firmware,
             memory,
         })

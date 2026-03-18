@@ -2,13 +2,15 @@ use crate::{
     error::Result,
     info::{FromArgs, InfoItem},
 };
-use heapless::String;
+
+use alloc::string::String;
+
 use uefi::runtime::get_time;
 
 #[derive(Clone)]
 pub struct Date {
-    pub date: String<16>,
-    pub time: String<16>,
+    pub date: String,
+    pub time: String,
 }
 
 impl Date {

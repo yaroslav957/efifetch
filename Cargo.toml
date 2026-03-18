@@ -1,31 +1,31 @@
 [package]
 name = "efifetch"
-authors = ["Yaroslav Lobachev"]
-categories = ["embedded", "uefi"]
-description = "UEFI application for fetching hardware info, written in Rust"
-repository = "github.com/yaroslav957/efifetch"
-keywords = ["uefi", "fetch", "efi", "osdev"]
-rust-version = "1.90"
 version = "0.2.0"
 edition = "2024"
-license = "MIT"
+rust-version = "1.90"
+authors = ["Yaroslav Lobachev"]
+description = "A simple system information tool for EFI environments"
+repository = "https://github.com/yaroslav957/efifetch"
+categories = ["embedded", "no-std", "os-dev"]
+keywords = ["uefi", "fetch", "efi", "system-info"]
+build = "build.rs"
+
+[dependencies]
+thiserror = { version = "=2.0.18", default-features = false }
+uefi = { version = "=0.36.1", features = ["alloc", "global_allocator", "panic_handler"] }
+
+[build-dependencies]
+vergen = { version = "=9.1.0", features = ["build", "rustc"] }
 
 [profile.dev]
-debug = true
 panic = "abort"
 
 [profile.release]
-lto = "thin"
+lto = true
+opt-level = "s"
 strip = "symbols"
 panic = "abort"
+codegen-units = 1
 
-[dependencies.heapless]
-version = "=0.9.2"
-
-[dependencies.thiserror]
-version = "=2.0.18"
-default-features = false
-
-[dependencies.uefi]
-version = "=0.36.1"
-features = ["panic_handler"]
+[profile.release.build-override]
+opt-level = 0

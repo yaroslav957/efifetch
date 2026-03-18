@@ -1,2 +1,6 @@
-wrap_comments = true
+edition = "2024"
+
 max_width = 80
+hard_tabs = false
+tab_spaces = 4
+reorder_imports = true

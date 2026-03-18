@@ -2,7 +2,9 @@ use crate::{
     error::Result,
     info::{FromArgs, InfoItem},
 };
-use heapless::String;
+
+use alloc::string::String;
+
 use uefi::{
     Error, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
@@ -14,17 +16,17 @@ const MB: u64 = 1024 * 1024;
 #[derive(Clone)]
 #[non_exhaustive]
 pub struct Memory {
-    pub memory: String<32>,
-    pub physical_start: String<16>,
-    pub virtual_start: String<16>,
+    pub memory: String,
+    pub physical_start: String,
+    pub virtual_start: String,
 }
 
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
-        let (total, usable, phys, virt) = Self::process_map(&map)?;
+        let (total, used, phys, virt) = Self::process_map(&map)?;
 
-        let memory = String::build(format_args!("{usable} / {total} MiB"))?;
+        let memory = String::build(format_args!("{used} / {total} MiB"))?;
         let physical_start = String::build(format_args!("{phys:#x}"))?;
         let virtual_start = String::build(format_args!("{virt:#x}"))?;
 
