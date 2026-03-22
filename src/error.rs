@@ -1,5 +1,5 @@
 use alloc::string::FromUtf16Error;
-use core::{fmt, result};
+use core::{fmt, result, str::Utf8Error};
 
 use thiserror::Error;
 use uefi::Status;
@@ -10,7 +10,10 @@ pub enum Error {
     #[error("Stdout UEFI proto or fmt error: {0}")]
     Fmt(#[from] fmt::Error),
 
-    #[error("Invalid UTF16 sequence: {0}")]
+    #[error("Invalid UTF-8 sequence: {0}")]
+    Utf8(#[from] Utf8Error),
+
+    #[error("Invalid UTF-16 sequence: {0}")]
     Utf16(#[from] FromUtf16Error),
 
     #[error("UEFI error: {0}")]

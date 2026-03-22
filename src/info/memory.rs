@@ -1,9 +1,6 @@
-use crate::{
-    error::Result,
-    info::{FromArgs, InfoItem},
-};
+use crate::{error::Result, info::InfoItem};
 
-use alloc::string::String;
+use alloc::{format, string::String};
 
 use uefi::{
     Error, Status,
@@ -13,7 +10,7 @@ use uefi::{
 
 const MB: u64 = 1024 * 1024;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct Memory {
     pub memory: String,
@@ -26,9 +23,9 @@ impl Memory {
         let map = memory_map(MemoryType::LOADER_DATA)?;
         let (total, used, phys, virt) = Self::process_map(&map)?;
 
-        let memory = String::build(format_args!("{used} / {total} MiB"))?;
-        let physical_start = String::build(format_args!("{phys:#x}"))?;
-        let virtual_start = String::build(format_args!("{virt:#x}"))?;
+        let memory = format!("{used} MiB / {total} MiB");
+        let physical_start = format!("{phys:#x}");
+        let virtual_start = format!("{virt:#x}");
 
         Ok(Self {
             memory,

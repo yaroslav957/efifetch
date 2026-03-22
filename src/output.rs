@@ -14,6 +14,24 @@ pub mod theme;
 const LOGO_LINES: usize = 16;
 const INFO_START: usize = 1;
 const LOGO: &str = include_str!("./../assets/uefi.logo");
+const PALETTE: [Color; 16] = [
+    Color::Black,
+    Color::Blue,
+    Color::Green,
+    Color::Cyan,
+    Color::Red,
+    Color::Magenta,
+    Color::Brown,
+    Color::LightGray,
+    Color::DarkGray,
+    Color::LightBlue,
+    Color::LightGreen,
+    Color::LightCyan,
+    Color::LightRed,
+    Color::LightMagenta,
+    Color::Yellow,
+    Color::White,
+];
 
 pub fn draw(
     stdout: &mut ScopedProtocol<Output>,
@@ -28,30 +46,25 @@ pub fn draw(
         Page::Memory => Page::Memory.add(&mut rows, &info)?,
     }
 
+    let total_lines = max(LOGO_LINES, rows.len());
+    let color_row = if total_lines > 2 { total_lines - 2 } else { 0 };
     let mut logo = LOGO.lines();
-    let total_lines = if flags.logo {
-        max(LOGO_LINES, rows.len())
-    } else {
-        rows.len()
-    };
 
     for i in 0..total_lines {
-        if flags.logo {
-            stdout.set_color(
-                flags.theme.logo.foreground,
-                flags.theme.logo.background,
-            )?;
+        stdout.set_color(
+            flags.theme.logo.foreground,
+            flags.theme.logo.background,
+        )?;
 
-            if let Some(line) = logo.next() {
-                write!(stdout, "{line}")?;
+        if let Some(line) = logo.next() {
+            write!(stdout, "{line}")?;
 
-                let len = line.len();
-                if len < INFO_START {
-                    write!(stdout, "{:width$}", "", width = INFO_START - len)?;
-                }
-            } else if i < LOGO_LINES || i < rows.len() {
-                write!(stdout, "{:width$}", "", width = INFO_START)?;
+            let len = line.len();
+            if len < INFO_START {
+                write!(stdout, "{:width$}", "", width = INFO_START - len)?;
             }
+        } else {
+            write!(stdout, "{:width$}", "", width = INFO_START)?;
         }
 
         if let Some((label, value)) = rows.get(i) {
@@ -65,11 +78,19 @@ pub fn draw(
                 flags.theme.content.background,
             )?;
             write!(stdout, "{value}")?;
+        } else if i >= color_row {
+            let idx = i - color_row;
+            if let Some(chunk) = PALETTE.chunks(8).nth(idx) {
+                for &color in chunk {
+                    stdout.set_color(color, Color::Black)?;
+                    write!(stdout, "██")?;
+                }
+            }
         }
+
         writeln!(stdout, "")?;
     }
 
     stdout.set_color(Color::LightGray, Color::Black)?;
-
     Ok(())
 }

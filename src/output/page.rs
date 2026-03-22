@@ -21,11 +21,9 @@ impl Page {
     ) -> Result<()> {
         match self {
             Self::Main => {
-                Self::filter(rows, &info.date, |_| true)?;
-
-                let allowed = ["Vendor:", "UEFI revision:"];
+                let allowed = ["Secure Boot:", "Language:"];
                 Self::filter(rows, &info.firmware, |(label, _)| {
-                    allowed.contains(label)
+                    !allowed.contains(label)
                 })?;
 
                 let allowed = ["Memory:"];

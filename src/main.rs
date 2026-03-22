@@ -41,14 +41,13 @@ const HELP: &str = concat!(
     "Options:\n",
     "  -h, --help           display this help and exit\n",
     "  -v, --version        output version information and exit\n",
-    "  -l, --logo           print system information alongside the logo\n",
     "  -p, --page=PAGE      specify the information page to display\n",
     "                         (main, firm, mem)\n",
     "  -t, --theme=COLOR    set the output color theme\n",
     "                         (red, green)\n",
     "\n",
     "Examples:\n",
-    "  efifetch -l -p=mem   Show memory info with a logo\n",
+    "  efifetch -p=mem   Show only memory info\n",
     "  efifetch --theme=red Set theme to red\n",
     "\n",
     "Report bugs to <https://github.com/yaroslav957/efifetch>"
@@ -154,7 +153,6 @@ fn parse(args: &[String], flags: &mut Flags) -> Result<()> {
         match arg {
             "-h" | "--help" => flags.help = true,
             "-v" | "--version" => flags.version = true,
-            "-l" | "--logo" => flags.logo = true,
             _ => {
                 flags.help = true;
                 flags.invalid_flag = true;
@@ -169,7 +167,6 @@ fn parse(args: &[String], flags: &mut Flags) -> Result<()> {
 struct Flags {
     pub help: bool,
     pub version: bool,
-    pub logo: bool,
     pub page: Page,
     pub theme: Theme,
     pub invalid_flag: bool,
