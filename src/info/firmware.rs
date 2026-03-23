@@ -24,22 +24,7 @@ pub struct Firmware {
 
 impl Firmware {
     pub fn new() -> Result<Self> {
-        let (date, time) = {
-            let time = get_time()?;
-            (
-                format!(
-                    "{:02}/{:02}/{}",
-                    time.day(),
-                    time.month(),
-                    time.year()
-                ),
-                format!(
-                    "{:02}:{:02} (UTC+3:00)",
-                    time.hour() + 3,
-                    time.minute()
-                ),
-            )
-        };
+        let (date, time) = Self::time()?;
         let vendor = {
             let buf = firmware_vendor().to_u16_slice();
 
@@ -82,6 +67,14 @@ impl Firmware {
             secure_boot,
             platform_lang,
         })
+    }
+
+    fn time() -> Result<(String, String)> {
+        let time = get_time()?;
+        Ok((
+            format!("{:02}/{:02}/{}", time.day(), time.month(), time.year()),
+            format!("{:02}:{:02} (UTC+3:00)", time.hour() + 3, time.minute()),
+        ))
     }
 }
 
