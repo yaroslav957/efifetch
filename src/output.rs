@@ -1,4 +1,8 @@
-use crate::{Flags, error::Result, info::Info, output::page::Page};
+use crate::{
+    error::Result,
+    info::Info,
+    output::{page::Page, theme::Theme},
+};
 
 use alloc::vec::Vec;
 use core::{cmp::max, fmt::Write};
@@ -36,11 +40,12 @@ const PALETTE: [Color; 16] = [
 pub fn draw(
     stdout: &mut ScopedProtocol<Output>,
     info: Info,
-    flags: Flags,
+    page: Page,
+    theme: Theme,
 ) -> Result<()> {
     let mut rows: Vec<(&str, &str)> = Vec::new();
 
-    match flags.page {
+    match page {
         Page::Main => Page::Main.add(&mut rows, &info)?,
         Page::Firmware => Page::Firmware.add(&mut rows, &info)?,
         Page::Memory => Page::Memory.add(&mut rows, &info)?,
@@ -51,10 +56,7 @@ pub fn draw(
     let mut logo = LOGO.lines();
 
     for i in 0..total_lines {
-        stdout.set_color(
-            flags.theme.logo.foreground,
-            flags.theme.logo.background,
-        )?;
+        stdout.set_color(theme.logo.foreground, theme.logo.background)?;
 
         if let Some(line) = logo.next() {
             write!(stdout, "{line}")?;
@@ -68,14 +70,11 @@ pub fn draw(
         }
 
         if let Some((label, value)) = rows.get(i) {
-            stdout.set_color(
-                flags.theme.label.foreground,
-                flags.theme.label.background,
-            )?;
+            stdout.set_color(theme.label.foreground, theme.label.background)?;
             write!(stdout, "{label} ")?;
             stdout.set_color(
-                flags.theme.content.foreground,
-                flags.theme.content.background,
+                theme.content.foreground,
+                theme.content.background,
             )?;
             write!(stdout, "{value}")?;
         } else if i >= color_row {

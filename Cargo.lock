@@ -21,6 +21,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 
 [[package]]
+name = "builder"
+version = "0.1.0"
+source = "git+https://github.com/yaroslav957/tenu#9f0e8d8132e83b0867b0f1a597fdd7b3ef9edf87"
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -105,6 +110,7 @@ dependencies = [
 name = "efifetch"
 version = "0.2.0"
 dependencies = [
+ "tenu",
  "thiserror",
  "uefi",
  "vergen",
@@ -154,6 +160,11 @@ checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "parse"
+version = "0.1.0"
+source = "git+https://github.com/yaroslav957/tenu#9f0e8d8132e83b0867b0f1a597fdd7b3ef9edf87"
 
 [[package]]
 name = "powerfmt"
@@ -255,6 +266,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tenu"
+version = "0.1.0"
+source = "git+https://github.com/yaroslav957/tenu#9f0e8d8132e83b0867b0f1a597fdd7b3ef9edf87"
+dependencies = [
+ "builder",
+ "parse",
 ]
 
 [[package]]

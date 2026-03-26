@@ -1,6 +1,3 @@
-//! TODO: Rewrite Shell args parsing with my own tiny cli-args parser lib,
-//! called `Tenu` (https://github.com/yaroslav957/tenu).
-
 #![no_std]
 #![no_main]
 
@@ -12,11 +9,15 @@ use crate::{
     output::{draw, page::Page, theme::Theme},
 };
 
-use alloc::{string::String, vec::Vec};
-use core::fmt::{self, Write};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
+use core::fmt::Write;
 
+use tenu::lex::{ArgType, LookupTable, Parser, Token};
 use uefi::{
-    CStr16, Status,
+    Status,
     boot::{
         ScopedProtocol, get_handle_for_protocol, image_handle,
         open_protocol_exclusive,
@@ -33,6 +34,13 @@ mod output;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const TIMESTAMP: &str = env!("VERGEN_BUILD_TIMESTAMP");
 const RUSTC: &str = env!("VERGEN_RUSTC_SEMVER");
+
+const TABLE: LookupTable = LookupTable(&[
+    ("help", ArgType::None, 'h'),
+    ("version", ArgType::None, 'v'),
+    ("page", ArgType::Required, 'p'),
+    ("theme", ArgType::Required, 't'),
+]);
 
 const HELP: &str = concat!(
     "Usage: efifetch [OPTION]...\n",
@@ -61,7 +69,6 @@ fn main() -> Status {
 
     Status::SUCCESS
 }
-
 fn run() -> Result<()> {
     init()?;
 
@@ -72,123 +79,79 @@ fn run() -> Result<()> {
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
     let info = Info::new()?;
-    let args = convert(params.args())?;
-    let mut flags = Flags::default();
+    let mut page = Page::default();
+    let mut theme = Theme::default();
 
-    parse(&args, &mut flags)?;
+    let args = params
+        .args()
+        .skip(1)
+        .map(|arg| arg.to_string())
+        .collect::<Vec<_>>();
 
-    if flags.help {
-        flags.print_err(&mut stdout)?;
-        writeln!(&mut stdout, "{HELP}")?;
-
-        return Ok(());
-    } else if flags.version {
-        writeln!(&mut stdout, "Version: {VERSION} builded on Rust {RUSTC}")?;
-        writeln!(&mut stdout, "Time: {TIMESTAMP}")?;
-
-        return Ok(());
-    }
-
-    draw(&mut stdout, info, flags)?;
+    parse(&mut stdout, &args, &mut page, &mut theme)?;
+    draw(&mut stdout, info, page, theme)?;
 
     Ok(())
 }
 
-fn convert<'a, I>(args: I) -> Result<Vec<String>>
-where
-    I: Iterator<Item = &'a CStr16>,
-{
-    args.skip(1)
-        .map(|arg| {
-            let buf = arg.to_u16_slice();
-            let s = String::from_utf16(buf)?;
+fn parse(
+    stdout: &mut ScopedProtocol<Output>,
+    args: &[String],
+    page: &mut Page,
+    theme: &mut Theme,
+) -> Result<()> {
+    let args = args.iter().map(|arg| arg.as_str());
+    let parser = Parser::new(args, TABLE);
 
-            Ok(s)
-        })
-        .collect()
-}
-
-/// REWRITE & DELETE
-/// REWRITE & DELETE
-/// REWRITE & DELETE
-fn parse(args: &[String], flags: &mut Flags) -> Result<()> {
-    for arg in args {
-        let arg = arg.as_str();
-
-        if let Some(val) = arg
-            .strip_prefix("-p=")
-            .or_else(|| arg.strip_prefix("--page="))
-        {
-            flags.page = match val {
-                "main" | "MAIN" => Page::Main,
-                "firm" | "FIRM" => Page::Firmware,
-                "mem" | "MEM" => Page::Memory,
-                _ => {
-                    flags.help = true;
-                    flags.invalid_option = true;
-                    flags.page
-                }
-            };
-
-            continue;
-        }
-
-        if let Some(val) = arg
-            .strip_prefix("-t=")
-            .or_else(|| arg.strip_prefix("--theme="))
-        {
-            flags.theme = match val {
-                "red" | "RED" => Theme::RED,
-                "green" | "GREEN" => Theme::GREEN,
-                _ => {
-                    flags.help = true;
-                    flags.invalid_option = true;
-                    flags.theme
-                }
-            };
-
-            continue;
-        }
-
-        match arg {
-            "-h" | "--help" => flags.help = true,
-            "-v" | "--version" => flags.version = true,
-            _ => {
-                flags.help = true;
-                flags.invalid_flag = true;
+    for token in parser {
+        match token {
+            Token::Option("help", _) => {
+                writeln!(stdout, "{HELP}")?;
+                return Ok(());
             }
+            Token::Option("version", _) => {
+                writeln!(stdout, "Version: {VERSION} | {TIMESTAMP}")?;
+                writeln!(stdout, "Built on: {RUSTC} Rust")?;
+                return Ok(());
+            }
+            Token::Option("page", Some(val)) => {
+                *page = match val.to_lowercase().as_str() {
+                    "main" => Page::Main,
+                    "firm" => Page::Firmware,
+                    "mem" => Page::Memory,
+                    _ => {
+                        writeln!(
+                            stdout,
+                            "Invalid page value: {val}, use --help"
+                        )?;
+                        return Ok(());
+                    }
+                };
+            }
+            Token::Option("theme", Some(val)) => {
+                *theme = match val.to_lowercase().as_str() {
+                    "red" => Theme::RED,
+                    "green" => Theme::GREEN,
+                    _ => {
+                        writeln!(
+                            stdout,
+                            "Invalid theme color: {val}, use --help"
+                        )?;
+                        return Ok(());
+                    }
+                };
+            }
+            Token::Error(err) => {
+                writeln!(stdout, "Command line error. {err}")?;
+                return Ok(());
+            }
+            Token::Value(val) => {
+                writeln!(stdout, "Unexpected argument. {val}")?;
+                return Ok(());
+            }
+            _ => {}
         }
     }
 
     Ok(())
-}
-
-#[derive(Clone, Copy, Default)]
-struct Flags {
-    pub help: bool,
-    pub version: bool,
-    pub page: Page,
-    pub theme: Theme,
-    pub invalid_flag: bool,
-    pub invalid_option: bool,
-}
-
-impl Flags {
-    fn print_err(&self, stdout: &mut ScopedProtocol<Output>) -> fmt::Result {
-        if self.invalid_flag {
-            writeln!(
-                stdout,
-                "Invalid flag or command. List of available flags:\n"
-            )?;
-        }
-
-        if self.invalid_option {
-            writeln!(
-                stdout,
-                "Invalid option value. List of available options:\n"
-            )?;
-        }
-
-        Ok(())
-    }
 }
