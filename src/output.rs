@@ -6,7 +6,6 @@ use crate::{
 
 use alloc::vec::Vec;
 use core::{cmp::max, fmt::Write};
-
 use uefi::{
     boot::ScopedProtocol,
     proto::console::text::{Color, Output},
@@ -43,30 +42,19 @@ pub fn draw(
     page: Page,
     theme: Theme,
 ) -> Result<()> {
-    let mut rows: Vec<(&str, &str)> = Vec::new();
+    let mut rows = Vec::new();
 
-    match page {
-        Page::Main => Page::Main.add(&mut rows, &info)?,
-        Page::Firmware => Page::Firmware.add(&mut rows, &info)?,
-        Page::Memory => Page::Memory.add(&mut rows, &info)?,
-    }
+    page.add(&mut rows, &info)?;
 
     let total_lines = max(LOGO_LINES, rows.len());
-    let color_row = if total_lines > 2 { total_lines - 2 } else { 0 };
-    let mut logo = LOGO.lines();
+    let palette_start = total_lines.saturating_sub(2);
+    let mut logo = LOGO.lines().fuse();
 
     for i in 0..total_lines {
         stdout.set_color(theme.logo.foreground, theme.logo.background)?;
 
         if let Some(line) = logo.next() {
-            write!(stdout, "{line}")?;
-
-            let len = line.len();
-            if len < INFO_START {
-                write!(stdout, "{:width$}", "", width = INFO_START - len)?;
-            }
-        } else {
-            write!(stdout, "{:width$}", "", width = INFO_START)?;
+            write!(stdout, "{line:width$}", width = INFO_START)?;
         }
 
         if let Some((label, value)) = rows.get(i) {
@@ -77,19 +65,20 @@ pub fn draw(
                 theme.content.background,
             )?;
             write!(stdout, "{value}")?;
-        } else if i >= color_row {
-            let idx = i - color_row;
-            if let Some(chunk) = PALETTE.chunks(8).nth(idx) {
-                for &color in chunk {
+        } else if i >= palette_start {
+            let idx = i - palette_start;
+            if let Some(colors) = PALETTE.chunks(8).nth(idx) {
+                for &color in colors {
                     stdout.set_color(color, Color::Black)?;
-                    write!(stdout, "██")?;
+                    write!(stdout, "███")?;
                 }
             }
         }
 
-        writeln!(stdout, "")?;
+        writeln!(stdout)?;
     }
 
     stdout.set_color(Color::LightGray, Color::Black)?;
+
     Ok(())
 }

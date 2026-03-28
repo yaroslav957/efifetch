@@ -1,5 +1,4 @@
 use std::error::Error;
-
 use vergen::{BuildBuilder, Emitter, RustcBuilder};
 
 fn main() -> Result<(), Box<dyn Error>> {

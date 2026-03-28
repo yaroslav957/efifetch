@@ -10,7 +10,7 @@ pub trait InfoItem {
     fn render(&self) -> impl Iterator<Item = (&str, &str)>;
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Info {
     pub firmware: Firmware,
     pub memory: Memory,

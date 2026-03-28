@@ -14,10 +14,9 @@ use alloc::{
     vec::Vec,
 };
 use core::fmt::Write;
-
 use tenu::lex::{ArgType, LookupTable, Parser, Token};
 use uefi::{
-    Status,
+    Error, Status,
     boot::{
         ScopedProtocol, get_handle_for_protocol, image_handle,
         open_protocol_exclusive,
@@ -69,6 +68,7 @@ fn main() -> Status {
 
     Status::SUCCESS
 }
+
 fn run() -> Result<()> {
     init()?;
 
@@ -78,15 +78,15 @@ fn run() -> Result<()> {
     let params = open_protocol_exclusive::<ShellParameters>(ih)?;
     let mut stdout = open_protocol_exclusive::<Output>(oh)?;
 
-    let info = Info::new()?;
-    let mut page = Page::default();
-    let mut theme = Theme::default();
-
     let args = params
         .args()
         .skip(1)
         .map(|arg| arg.to_string())
         .collect::<Vec<_>>();
+
+    let info = Info::new()?;
+    let mut page = Page::default();
+    let mut theme = Theme::default();
 
     parse(&mut stdout, &args, &mut page, &mut theme)?;
     draw(&mut stdout, info, page, theme)?;
@@ -107,12 +107,12 @@ fn parse(
         match token {
             Token::Option("help", _) => {
                 writeln!(stdout, "{HELP}")?;
-                return Ok(());
+                return Err(Error::new(Status::ABORTED, ()).into());
             }
             Token::Option("version", _) => {
                 writeln!(stdout, "Version: {VERSION} | {TIMESTAMP}")?;
                 writeln!(stdout, "Built on: {RUSTC} Rust")?;
-                return Ok(());
+                return Err(Error::new(Status::ABORTED, ()).into());
             }
             Token::Option("page", Some(val)) => {
                 *page = match val.to_lowercase().as_str() {
@@ -120,11 +120,10 @@ fn parse(
                     "firm" => Page::Firmware,
                     "mem" => Page::Memory,
                     _ => {
-                        writeln!(
-                            stdout,
-                            "Invalid page value: {val}, use --help"
-                        )?;
-                        return Ok(());
+                        writeln!(stdout, "Unexpected page value: '{val}'")?;
+                        return Err(
+                            Error::new(Status::INVALID_PARAMETER, ()).into()
+                        );
                     }
                 };
             }
@@ -133,21 +132,20 @@ fn parse(
                     "red" => Theme::RED,
                     "green" => Theme::GREEN,
                     _ => {
-                        writeln!(
-                            stdout,
-                            "Invalid theme color: {val}, use --help"
-                        )?;
-                        return Ok(());
+                        writeln!(stdout, "Unexpected theme value: '{val}'")?;
+                        return Err(
+                            Error::new(Status::INVALID_PARAMETER, ()).into()
+                        );
                     }
                 };
             }
             Token::Error(err) => {
-                writeln!(stdout, "Command line error. {err}")?;
-                return Ok(());
+                writeln!(stdout, "Internal parser error: '{err}'")?;
+                return Err(Error::new(Status::ABORTED, ()).into());
             }
             Token::Value(val) => {
-                writeln!(stdout, "Unexpected argument. {val}")?;
-                return Ok(());
+                writeln!(stdout, "Unexpected argument: '{val}'")?;
+                return Err(Error::new(Status::ABORTED, ()).into());
             }
             _ => {}
         }

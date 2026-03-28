@@ -1,6 +1,5 @@
 use alloc::string::FromUtf16Error;
 use core::{fmt, result, str::Utf8Error};
-
 use thiserror::Error;
 use uefi::Status;
 

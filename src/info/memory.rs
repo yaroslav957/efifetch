@@ -1,67 +1,45 @@
 use crate::{error::Result, info::InfoItem};
 
 use alloc::{format, string::String};
-
 use uefi::{
-    Error, Status,
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapOwned},
 };
 
-const MB: u64 = 1024 * 1024;
+const MIB: u64 = 1024 * 1024;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 pub struct Memory {
-    pub memory: String,
-    pub physical_start: String,
-    pub virtual_start: String,
+    pub count: String,
 }
 
 impl Memory {
     pub fn new() -> Result<Self> {
         let map = memory_map(MemoryType::LOADER_DATA)?;
-        let (total, used, phys, virt) = Self::process_map(&map)?;
+        let (total, free) = Self::count(&map);
+        let count = format!("{} MiB / {total} MiB", total - free);
 
-        let memory = format!("{used} MiB / {total} MiB");
-        let physical_start = format!("{phys:#x}");
-        let virtual_start = format!("{virt:#x}");
-
-        Ok(Self {
-            memory,
-            physical_start,
-            virtual_start,
-        })
+        Ok(Self { count })
     }
 
-    fn process_map(map: &MemoryMapOwned) -> Result<(u64, u64, u64, u64)> {
-        let mut total = 0u64;
-        let mut usable = 0u64;
-        let mut start_ptrs = None;
-
-        for entry in map.entries() {
-            let size = entry.page_count * PAGE_SIZE as u64;
-
-            if Self::is_total(entry.ty) {
-                total += size;
-            }
-
-            if entry.ty == MemoryType::CONVENTIONAL {
-                usable += size;
-
-                if start_ptrs.is_none() {
-                    start_ptrs = Some((entry.phys_start, entry.virt_start));
+    fn count(map: &MemoryMapOwned) -> (u64, u64) {
+        let (total, free) =
+            map.entries().fold((0, 0), |(total, free), entry| {
+                match (
+                    Self::is_total(entry.ty),
+                    matches!(entry.ty, MemoryType::CONVENTIONAL),
+                ) {
+                    (true, true) => {
+                        (total + entry.page_count, free + entry.page_count)
+                    }
+                    (true, false) => (total + entry.page_count, free),
+                    _ => (total, free),
                 }
-            }
-        }
+            });
+        let size = MIB / PAGE_SIZE as u64;
 
-        let used = total - usable;
-        let (phys, virt) = start_ptrs.ok_or(Error::new(
-            Status::NOT_FOUND,
-            "No pointers found from memmap",
-        ))?;
-
-        Ok((total / MB, used / MB, phys, virt))
+        (total / size, free / size)
     }
 
     const fn is_total(ty: MemoryType) -> bool {
@@ -86,11 +64,6 @@ impl Memory {
 
 impl InfoItem for Memory {
     fn render(&self) -> impl Iterator<Item = (&str, &str)> {
-        [
-            ("Memory:", self.memory.as_str()),
-            ("Physical start:", self.physical_start.as_str()),
-            ("Virtual start:", self.virtual_start.as_str()),
-        ]
-        .into_iter()
+        [("Memory:", self.count.as_str())].into_iter()
     }
 }
